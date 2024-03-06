@@ -65,7 +65,7 @@ const app: App = {
       name: 'createPost',
       title: 'Create a Post',
       action: 'createPost',
-      params: [],
+      params: {},
       fields: [
         {
           name: 'author',
@@ -84,7 +84,6 @@ const app: App = {
         {
           name: 'submit',
           label: 'Post!',
-          required: true,
           type: 'submit'
         }
       ]
@@ -93,12 +92,11 @@ const app: App = {
       name: 'upvotePost',
       title: 'Upvote Post',
       action: 'upvotePost',
-      params: [],
+      params: { id: 'string' },
       fields: [
         {
           name: 'submit',
           label: 'Upvote',
-          required: true,
           type: 'submit'
         }
       ]

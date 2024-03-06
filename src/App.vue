@@ -33,7 +33,6 @@ const view = computed<View>(() => {
 const ctx: { [key: string]: any } = {};
 for (const action of app.actions) {
   const apiFunc = (args: Record<string, any>, additionalParams: Record<string, any>) => {
-    //console.log('HERE', args, additionalParams);
     return useFetchy(action.path, action.method, {
       body: args[0] ?? {},
       additionalParams

@@ -31,7 +31,7 @@ export interface Action {
 export interface Form {
   name: string; // unique name of the form, e.g., createPost
   title?: string; // title of the form, e.g., 'Create Post'
-  params: Array<FormParam>; // "hidden" fields of this form, e.g., [{ name: '_id', value: '123 }]
+  params: Record<string, JSONTypeLiteral>; // "hidden" fields of this form, e.g., [{ id: 123 }]
   fields: Array<FormField>; // visible fields of this form, e.g., [{ name: 'title', label: 'Title', required: true, type: 'text' }]
   action: string; // name of the action to call when the form is submitted, e.g., 'createPost'
 }
@@ -46,7 +46,7 @@ export interface FormParam {
 export interface FormFieldBase {
   name: string;
   label: string;
-  required: boolean;
+  required?: boolean;
   placeholder?: string;
   type:
     | 'text'
