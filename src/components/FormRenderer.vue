@@ -6,7 +6,7 @@ import { evaluateWithCtx } from '@/util';
 
 const { view, ctx } = defineProps<{
   view: ViewForm;
-  ctx: Object;
+  ctx: Record<string, any>;
 }>();
 
 const form = app.forms.find((form) => form.name === view.form);

@@ -4,7 +4,7 @@ import type { ViewLink } from '@/types';
 
 const { view, ctx } = defineProps<{
   view: ViewLink;
-  ctx: Object;
+  ctx: Record<string, any>;
 }>();
 //console.log('LinkRenderer', view, ctx);
 </script>

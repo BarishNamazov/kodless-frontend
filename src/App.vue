@@ -10,6 +10,14 @@ import { useFetchy } from './composables/useFetchy';
 const route = useRoute();
 
 const view = computed<View>(() => {
+  // Need to wait for the route to be updated
+  if (route.fullPath !== window.location.pathname) {
+    return {
+      type: 'text',
+      text: 'Loading...'
+    };
+  }
+
   const path = route.fullPath;
   const view = app.pages.find((page) => page.path === path)?.view;
   if (!view) {
@@ -31,7 +39,7 @@ for (const action of app.actions) {
       additionalParams
     });
   };
-  ctx[action.name] = { ...useApi(apiFunc, action.name, action.refreshes)(), __isAction: true };
+  ctx[action.name] = { apiFunc: useApi(apiFunc, action.name, action.refreshes), __isAction: true };
 }
 
 //console.log('App', view);

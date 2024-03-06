@@ -3,7 +3,7 @@ import type { ViewImage } from '@/types';
 
 const { view, ctx } = defineProps<{
   view: ViewImage;
-  ctx: Object;
+  ctx: Record<string, any>;
 }>();
 //console.log('ImageRenderer', view, ctx);
 </script>

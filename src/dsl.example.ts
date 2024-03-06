@@ -47,7 +47,7 @@ const app: App = {
       name: 'createPost',
       method: 'POST',
       path: 'http://localhost:5000/api/posts',
-      params: { content: 'string' },
+      params: { author: 'string', content: 'string' },
       returns: { author: 'string', content: 'string' },
       refreshes: ['getPosts']
     },

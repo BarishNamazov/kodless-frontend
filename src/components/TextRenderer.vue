@@ -5,7 +5,7 @@ import { evaluateWithCtx } from '@/util';
 
 const { view, ctx } = defineProps<{
   view: ViewText;
-  ctx: Object;
+  ctx: Record<string, any>;
 }>();
 
 //console.log('Text', view, ctx);

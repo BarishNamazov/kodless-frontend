@@ -3,7 +3,7 @@ function safeValue(x: any) {
 }
 
 // TODO: do something about this ...
-function createReactiveContext(ctx: Object) {
+function createReactiveContext(ctx: Record<string, any>) {
   return new Proxy(ctx, {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
@@ -24,19 +24,19 @@ function createReactiveContext(ctx: Object) {
   });
 }
 
-function evaluateStrWithCtx(str: string, ctx: Object) {
+function evaluateStrWithCtx(str: string, ctx: Record<string, any>) {
   return str.replace(/\{\{([^}]+)\}\}/g, (_, expression) => {
     return evaluateExpWithCtx(expression, ctx);
   });
 }
 
-function evaluateExpWithCtx(expression: string, ctx: Object) {
+function evaluateExpWithCtx(expression: string, ctx: Record<string, any>) {
   const ctxProxy = createReactiveContext(ctx);
   const func = new Function('ctx', `with(ctx) { return ${expression}; }`);
   return func(ctxProxy);
 }
 
-export function evaluateWithCtx(thing: string, ctx: Object) {
+export function evaluateWithCtx(thing: string, ctx: Record<string, any>) {
   if (thing.includes('{{')) {
     return evaluateStrWithCtx(thing, ctx);
   }

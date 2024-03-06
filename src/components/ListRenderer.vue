@@ -6,7 +6,7 @@ import { evaluateWithCtx } from '@/util';
 
 const { view, ctx } = defineProps<{
   view: ViewList;
-  ctx: Object;
+  ctx: Record<string, any>;
 }>();
 
 //console.log('ListRenderer', view, ctx);

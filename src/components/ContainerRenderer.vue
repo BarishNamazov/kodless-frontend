@@ -5,7 +5,7 @@ import ViewRenderer from './ViewRenderer.vue';
 
 const { view, ctx } = defineProps<{
   view: ViewContainer;
-  ctx: Object;
+  ctx: Record<string, any>;
 }>();
 //console.log('ContainerRenderer', view, ctx);
 </script>

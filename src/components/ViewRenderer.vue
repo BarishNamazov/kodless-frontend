@@ -11,12 +11,18 @@ import FormRenderer from './FormRenderer.vue';
 
 const { view, ctx } = defineProps<{
   view: View;
-  ctx: Object;
+  ctx: Record<string, any>;
 }>();
 
 let newCtx = { ...ctx };
 if (view.params) {
   newCtx = { ...ctx, ...view.params };
+}
+
+for (const key in newCtx) {
+  if (newCtx[key].__isAction) {
+    newCtx[key] = { ...newCtx[key], ...newCtx[key].apiFunc() };
+  }
 }
 
 //console.log('ViewRenderer', view, ctx);
