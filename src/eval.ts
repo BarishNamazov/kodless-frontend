@@ -45,6 +45,9 @@ export function evaluateWithCtx(thing: string, ctx: Record<string, any>) {
     } else {
       try {
         result = evaluateExpWithCtx(thing, ctx);
+        if (result === undefined) {
+          result = thing;
+        }
       } catch (_) {
         result = thing;
       }

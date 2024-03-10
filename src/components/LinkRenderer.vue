@@ -6,7 +6,6 @@ const { view, ctx } = defineProps<{
   view: ViewLink;
   ctx: Record<string, any>;
 }>();
-//console.log('LinkRenderer', view, ctx);
 </script>
 
 <template>

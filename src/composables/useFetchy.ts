@@ -34,7 +34,6 @@ export async function useFetchy(
     // replace all keys with the actual values
     keys.forEach((key) => {
       const keyName = key.slice(2);
-      console.log(keyName, options.additionalParams);
       let val = evaluateWithCtx(keyName, options.additionalParams);
       val = evaluateWithCtx(val, options.additionalParams);
       url = url.replace(key, '/' + val);
@@ -74,6 +73,7 @@ export async function useFetchy(
 
   if (options.alert && result.msg) {
     //console.log(result.msg);
+    // TODO: alert the user
   }
 
   if (!response.ok) {

@@ -1,7 +1,5 @@
 import type { App, ViewNavbar } from './types';
 
-// Example
-
 const navbar: ViewNavbar = {
   name: 'navbar',
   type: 'navbar',
@@ -59,6 +57,13 @@ const app: App = {
       params: { id: 'string' },
       returns: {},
       refreshes: ['getUpvotes']
+    },
+    {
+      name: 'getQuote',
+      method: 'GET',
+      path: 'https://api.quotable.io/random',
+      params: {},
+      returns: { content: 'string', author: 'string' }
     }
   ],
   forms: [
@@ -106,44 +111,45 @@ const app: App = {
     {
       name: 'home',
       path: '/',
-      view: {
-        type: 'container',
-        params: {
-          username: '{{ getName.loading ? "loading..." : getName.data }}'
-        },
-        children: [navbar, 'Welcome, {{ username }}!']
-      }
+      view: [
+        navbar,
+        'Welcome, {{ getName.data ?? "loading..." }}!',
+        'Below is a random quote for you:',
+        '{{ getQuote.data?.content ?? "Getting your quote..." }}'
+      ]
     },
     {
       name: 'posts',
       path: '/posts',
-      view: {
-        type: 'container',
-        children: [
-          navbar,
-          'Posts',
-          { type: 'form', form: 'createPost', params: {} },
-          {
-            name: 'postsList',
-            type: 'list',
-            itemRef: 'post',
-            value: 'getPosts.loading ? [] : getPosts.data',
-            container: {
-              type: 'container',
-              children: [
-                '{{ post.author }}',
-                '{{ post.content }}',
-                {
-                  type: 'text',
-                  text: 'Upvotes: {{ getUpvotes.loading ? "loading..." : getUpvotes.data }}',
-                  params: { id: 'post._id' }
-                },
-                { type: 'form', form: 'upvotePost', params: { id: 'post._id' } }
-              ]
-            }
+      view: [
+        navbar,
+        { type: 'form', form: 'createPost', params: {} },
+        {
+          name: 'postsList',
+          type: 'list',
+          itemRef: 'post',
+          value: 'getPosts.loading ? [] : getPosts.data',
+          container: {
+            type: 'container',
+            children: [
+              '@{{ post.author }} at {{ new Date(post.dateCreated).toLocaleString() }}:',
+              '{{ post.content }}',
+              {
+                type: 'container',
+                styles: { display: 'flex', alignItems: 'center', gap: '1em' },
+                children: [
+                  {
+                    type: 'text',
+                    text: 'Upvotes: {{ getUpvotes.loading ? "loading..." : getUpvotes.data }}',
+                    params: { id: 'post._id' }
+                  },
+                  { type: 'form', form: 'upvotePost', params: { id: 'post._id' }, inline: true }
+                ]
+              }
+            ]
           }
-        ]
-      }
+        }
+      ]
     }
   ]
 };

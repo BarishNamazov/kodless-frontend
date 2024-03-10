@@ -25,4 +25,8 @@ const route = useRoute();
 .active {
   font-weight: bold;
 }
+
+ul {
+  margin: 1em auto;
+}
 </style>

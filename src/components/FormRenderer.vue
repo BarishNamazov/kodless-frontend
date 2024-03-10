@@ -53,8 +53,8 @@ const handleSubmit = async (e: Event) => {
 
 <template>
   <p v-if="!form">Form not found: {{ view.form }}</p>
-  <form v-else @submit="handleSubmit">
-    <h3 v-if="form.title">{{ form.title }}</h3>
+  <form v-else @submit="handleSubmit" :class="{ inline: view.inline }">
+    <header v-if="form.title">{{ form.title }}</header>
     <div v-for="(field, i) in form.fields" :key="i">
       <component :is="renderFormField(field)" />
     </div>

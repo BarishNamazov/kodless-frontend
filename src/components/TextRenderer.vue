@@ -4,7 +4,7 @@ import type { ViewText } from '@/types';
 import { evaluateWithCtx } from '@/eval';
 
 const { view, ctx } = defineProps<{
-  view: ViewText | string;
+  view: ViewText;
   ctx: Record<string, any>;
 }>();
 
@@ -16,5 +16,5 @@ watchEffect(() => {
 </script>
 
 <template>
-  <span>{{ text }}</span>
+  <div>{{ text }}</div>
 </template>

@@ -75,10 +75,11 @@ export interface ViewBase {
   name?: string;
   type: string;
   params?: Record<string, JSONValue>;
+  styles?: Partial<CSSStyleDeclaration>;
 }
 
 // ViewText is a view that renders text
-export interface ViewText extends ViewBase {
+interface ViewTextT extends ViewBase {
   type: 'text';
   text: string;
 }
@@ -107,7 +108,7 @@ export interface ViewList extends ViewBase {
 }
 
 // ViewContainer is a view that contains other views
-export interface ViewContainer extends ViewBase {
+interface ViewContainerT extends ViewBase {
   type: 'container';
   children: Array<View>;
 }
@@ -122,9 +123,13 @@ export interface ViewForm extends ViewBase {
   type: 'form';
   form: string; // name of the form to render
   params: Record<string, JSONValue>; // params to pass to the form (i.e., the hidden fields of the form)
+  inline?: boolean; // whether to render the form inline
 }
 
-export type View = string | ViewText | ViewLink | ViewImage | ViewList | ViewContainer | ViewForm | ViewNavbar;
+export type ViewText = ViewTextT | string;
+export type ViewContainer = ViewContainerT | Array<View>;
+
+export type View = ViewText | ViewLink | ViewImage | ViewList | ViewContainer | ViewForm | ViewNavbar;
 
 // Page is a collection of views
 export interface Page {

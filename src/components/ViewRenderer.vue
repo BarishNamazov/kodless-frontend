@@ -11,26 +11,29 @@ import FormRenderer from './FormRenderer.vue';
 import NavbarRenderer from './NavbarRenderer.vue';
 
 const { view, ctx } = defineProps<{
-  view: View | string;
+  view: View;
   ctx: Record<string, any>;
 }>();
 
 let newCtx = { ...ctx };
-if (typeof view !== 'string') {
+if (typeof view !== 'string' && !Array.isArray(view)) {
   if (view.params) {
     newCtx = { ...ctx, ...view.params };
   }
+}
 
-  for (const key in newCtx) {
-    if (newCtx[key].__isAction) {
-      newCtx[key] = { ...newCtx[key], ...newCtx[key].apiFunc() };
-    }
+for (const key in newCtx) {
+  if (newCtx[key].__isAction) {
+    newCtx[key] = { ...newCtx[key], ...newCtx[key].apiFunc({ options: { silentFetch: true } }) };
   }
 }
 
 const component = computed(() => {
   if (typeof view === 'string') {
     return TextRenderer;
+  }
+  if (Array.isArray(view)) {
+    return ContainerRenderer;
   }
   switch (view.type) {
     case 'text':
@@ -52,8 +55,15 @@ const component = computed(() => {
       return 'div';
   }
 });
+
+const styles = computed(() => {
+  if (typeof view !== 'string' && !Array.isArray(view)) {
+    return view.styles ?? {};
+  }
+  return {};
+});
 </script>
 
 <template>
-  <component :is="component" :view :ctx="newCtx" />
+  <component :is="component" :view :ctx="newCtx" :style="styles" />
 </template>

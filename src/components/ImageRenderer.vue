@@ -5,7 +5,6 @@ const { view, ctx } = defineProps<{
   view: ViewImage;
   ctx: Record<string, any>;
 }>();
-//console.log('ImageRenderer', view, ctx);
 </script>
 
 <template>

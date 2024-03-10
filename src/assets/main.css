@@ -1,1 +1,11 @@
 @import 'mvp.css';
+
+ul,
+ol {
+  list-style: none;
+  padding-left: 0;
+}
+
+textarea {
+  font-family: inherit;
+}

@@ -60,6 +60,10 @@ export function useApi<F extends Func>(apiFunction: F, key: string, refreshes?: 
     watch(
       () => apiState.triggers[key],
       async () => {
+        if (params === null) {
+          // usually the case when action is initialized for other views
+          return;
+        }
         void execute.call(null, ...params!);
       }
     );
