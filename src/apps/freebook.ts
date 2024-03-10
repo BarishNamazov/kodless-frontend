@@ -170,7 +170,7 @@ const app: App = {
     }
   ],
   params: {
-    user: 'getName.data'
+    user: 'getName.error ? null : getName.data'
   },
   pages: [
     {
