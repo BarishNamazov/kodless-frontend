@@ -1,4 +1,4 @@
-import { evaluateWithCtx } from '@/util';
+import { evaluateWithCtx } from '@/eval';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 export type BodyT = string | Date | number | boolean | null | undefined | BodyT[] | { [key: string]: BodyT };
@@ -39,10 +39,6 @@ export async function useFetchy(
       val = evaluateWithCtx(val, options.additionalParams);
       url = url.replace(key, '/' + val);
     });
-    // for (const key in options.additionalParams) {
-    //   const val = evaluateWithCtx(options.additionalParams[key], options.additionalParams);
-    //   url = url.replace(`:${key}`, val);
-    // }
   }
 
   if (options.body && JSON.stringify(options.body) === '{}') {

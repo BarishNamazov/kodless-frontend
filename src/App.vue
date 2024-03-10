@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
 import app from './config';
-import { computed, onMounted } from 'vue';
+import { computed, onBeforeMount, onMounted } from 'vue';
 import ViewRenderer from './components/ViewRenderer.vue';
 import type { View } from './types';
 import { useApi } from './composables/useApi';
@@ -41,9 +41,24 @@ for (const action of app.actions) {
   ctx[action.name] = { apiFunc: useApi(apiFunc, action.name, action.refreshes), __isAction: true };
 }
 
-//console.log('App', view);
+onBeforeMount(() => {
+  document.title = app.name;
+  if (app.favicon) {
+    document.querySelector('link[rel="icon"]')?.setAttribute('href', app.favicon);
+  }
+});
 </script>
 
 <template>
-  <ViewRenderer :view :ctx :key="$route.fullPath" />
+  <main>
+    <ViewRenderer :view :ctx :key="$route.fullPath" />
+  </main>
 </template>
+
+<style scoped>
+main {
+  padding: 0;
+  margin: 0 auto;
+  max-width: 40em;
+}
+</style>

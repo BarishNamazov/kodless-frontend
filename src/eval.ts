@@ -37,12 +37,25 @@ function evaluateExpWithCtx(expression: string, ctx: Record<string, any>) {
 }
 
 export function evaluateWithCtx(thing: string, ctx: Record<string, any>) {
-  if (thing.includes('{{')) {
-    return evaluateStrWithCtx(thing, ctx);
-  }
-  try {
-    return evaluateExpWithCtx(thing, ctx);
-  } catch (_) {
-    return thing;
+  let count = 0;
+  while (true) {
+    let result;
+    if (thing.includes('{{')) {
+      result = evaluateStrWithCtx(thing, ctx);
+    } else {
+      try {
+        result = evaluateExpWithCtx(thing, ctx);
+      } catch (_) {
+        result = thing;
+      }
+    }
+    if (result === thing || typeof result !== 'string') {
+      return result;
+    }
+    thing = result;
+    count++;
+    if (count > 10) {
+      throw new Error('evaluateWithCtx: infinite loop detected');
+    }
   }
 }

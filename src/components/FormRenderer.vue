@@ -2,7 +2,7 @@
 import type { FormField, ViewForm } from '@/types';
 import { h } from 'vue';
 import app from '@/config';
-import { evaluateWithCtx } from '@/util';
+import { evaluateWithCtx } from '@/eval';
 
 const { view, ctx } = defineProps<{
   view: ViewForm;
@@ -54,11 +54,9 @@ const handleSubmit = async (e: Event) => {
 <template>
   <p v-if="!form">Form not found: {{ view.form }}</p>
   <form v-else @submit="handleSubmit">
-    <fieldset>
-      <legend>{{ form.title }}</legend>
-      <div v-for="(field, i) in form.fields" :key="i">
-        <component :is="renderFormField(field)" />
-      </div>
-    </fieldset>
+    <h3 v-if="form.title">{{ form.title }}</h3>
+    <div v-for="(field, i) in form.fields" :key="i">
+      <component :is="renderFormField(field)" />
+    </div>
   </form>
 </template>

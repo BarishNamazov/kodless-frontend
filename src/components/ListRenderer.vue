@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import ViewRenderer from './ViewRenderer.vue';
 import type { ViewList } from '@/types';
-import { evaluateWithCtx } from '@/util';
+import { evaluateWithCtx } from '@/eval';
 
 const { view, ctx } = defineProps<{
   view: ViewList;

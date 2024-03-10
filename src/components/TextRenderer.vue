@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue';
 import type { ViewText } from '@/types';
-import { evaluateWithCtx } from '@/util';
+import { evaluateWithCtx } from '@/eval';
 
 const { view, ctx } = defineProps<{
-  view: ViewText;
+  view: ViewText | string;
   ctx: Record<string, any>;
 }>();
 
-//console.log('Text', view, ctx);
 const text = ref('...');
 
 watchEffect(() => {
-  text.value = evaluateWithCtx(view.text, ctx);
+  text.value = evaluateWithCtx(typeof view === 'string' ? view : view.text, ctx);
 });
 </script>
 

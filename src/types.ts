@@ -112,6 +112,11 @@ export interface ViewContainer extends ViewBase {
   children: Array<View>;
 }
 
+export interface ViewNavbar extends ViewBase {
+  type: 'navbar';
+  links: Array<ViewLink>;
+}
+
 // ViewForm is a view that renders a form
 export interface ViewForm extends ViewBase {
   type: 'form';
@@ -119,7 +124,7 @@ export interface ViewForm extends ViewBase {
   params: Record<string, JSONValue>; // params to pass to the form (i.e., the hidden fields of the form)
 }
 
-export type View = ViewText | ViewLink | ViewImage | ViewList | ViewContainer | ViewForm;
+export type View = string | ViewText | ViewLink | ViewImage | ViewList | ViewContainer | ViewForm | ViewNavbar;
 
 // Page is a collection of views
 export interface Page {
@@ -131,6 +136,7 @@ export interface Page {
 // App is a collection of pages, actions, and forms
 export interface App {
   name: string;
+  favicon?: string;
   pages: Array<Page>;
   actions: Array<Action>;
   forms: Array<Form>;

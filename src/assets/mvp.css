@@ -148,9 +148,7 @@ section header {
 nav {
   align-items: center;
   display: flex;
-  font-weight: bold;
   justify-content: space-between;
-  margin-bottom: 7rem;
 }
 
 nav ul {
@@ -280,12 +278,12 @@ sup {
 a {
   color: var(--color-link);
   display: inline-block;
-  font-weight: bold;
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 a:hover {
   filter: brightness(var(--hover-brightness));
+  text-decoration: underline;
 }
 
 a:active {
@@ -304,7 +302,7 @@ input[type='submit'] {
   font-weight: bold;
   line-height: var(--line-height);
   margin: 0.5rem 0;
-  padding: 1rem 2rem;
+  padding: 0.5rem 1rem;
 }
 
 button,

@@ -8,26 +8,30 @@ import LinkRenderer from './LinkRenderer.vue';
 import ListRenderer from './ListRenderer.vue';
 import ImageRenderer from './ImageRenderer.vue';
 import FormRenderer from './FormRenderer.vue';
+import NavbarRenderer from './NavbarRenderer.vue';
 
 const { view, ctx } = defineProps<{
-  view: View;
+  view: View | string;
   ctx: Record<string, any>;
 }>();
 
 let newCtx = { ...ctx };
-if (view.params) {
-  newCtx = { ...ctx, ...view.params };
-}
+if (typeof view !== 'string') {
+  if (view.params) {
+    newCtx = { ...ctx, ...view.params };
+  }
 
-for (const key in newCtx) {
-  if (newCtx[key].__isAction) {
-    newCtx[key] = { ...newCtx[key], ...newCtx[key].apiFunc() };
+  for (const key in newCtx) {
+    if (newCtx[key].__isAction) {
+      newCtx[key] = { ...newCtx[key], ...newCtx[key].apiFunc() };
+    }
   }
 }
 
-//console.log('ViewRenderer', view, ctx);
-
 const component = computed(() => {
+  if (typeof view === 'string') {
+    return TextRenderer;
+  }
   switch (view.type) {
     case 'text':
       return TextRenderer;
@@ -41,6 +45,8 @@ const component = computed(() => {
       return ImageRenderer;
     case 'form':
       return FormRenderer;
+    case 'navbar':
+      return NavbarRenderer;
     default:
       // console.error(`Unknown view type: ${view.type ?? 'hh'}`);
       return 'div';

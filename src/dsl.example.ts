@@ -1,11 +1,11 @@
-import type { App, View } from './types';
+import type { App, ViewNavbar } from './types';
 
 // Example
 
-const navbar: View = {
+const navbar: ViewNavbar = {
   name: 'navbar',
-  type: 'container',
-  children: [
+  type: 'navbar',
+  links: [
     {
       type: 'link',
       text: 'Home',
@@ -21,6 +21,7 @@ const navbar: View = {
 
 const app: App = {
   name: 'Mini Social Media',
+  favicon: 'https://emojicdn.elk.sh/🐦?style=google',
   actions: [
     {
       name: 'getName',
@@ -48,7 +49,7 @@ const app: App = {
       method: 'POST',
       path: 'http://localhost:5000/api/posts',
       params: { author: 'string', content: 'string' },
-      returns: { author: 'string', content: 'string' },
+      returns: { msg: 'string' },
       refreshes: ['getPosts']
     },
     {
@@ -90,7 +91,6 @@ const app: App = {
     },
     {
       name: 'upvotePost',
-      title: 'Upvote Post',
       action: 'upvotePost',
       params: { id: 'string' },
       fields: [
@@ -108,7 +108,10 @@ const app: App = {
       path: '/',
       view: {
         type: 'container',
-        children: [navbar, { type: 'text', text: 'Welcome, {{ getName.loading ? "loading..." : getName.data }}!' }]
+        params: {
+          username: '{{ getName.loading ? "loading..." : getName.data }}'
+        },
+        children: [navbar, 'Welcome, {{ username }}!']
       }
     },
     {
@@ -118,7 +121,7 @@ const app: App = {
         type: 'container',
         children: [
           navbar,
-          { type: 'text', text: 'Posts' },
+          'Posts',
           { type: 'form', form: 'createPost', params: {} },
           {
             name: 'postsList',
@@ -128,8 +131,8 @@ const app: App = {
             container: {
               type: 'container',
               children: [
-                { type: 'text', text: '{{ post.author }}' },
-                { type: 'text', text: '{{ post.content }}' },
+                '{{ post.author }}',
+                '{{ post.content }}',
                 {
                   type: 'text',
                   text: 'Upvotes: {{ getUpvotes.loading ? "loading..." : getUpvotes.data }}',
