@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, computed } from 'vue';
+import { defineProps, computed, watchEffect, ref, reactive } from 'vue';
 import type { View } from '@/types';
 
 import ContainerRenderer from './ContainerRenderer.vue';
@@ -9,6 +9,7 @@ import ListRenderer from './ListRenderer.vue';
 import ImageRenderer from './ImageRenderer.vue';
 import FormRenderer from './FormRenderer.vue';
 import NavbarRenderer from './NavbarRenderer.vue';
+import { evaluateWithCtx } from '@/eval';
 
 const { view, ctx } = defineProps<{
   view: View;
@@ -16,15 +17,27 @@ const { view, ctx } = defineProps<{
 }>();
 
 let newCtx = { ...ctx };
-if (typeof view !== 'string' && !Array.isArray(view)) {
-  if (view.params) {
-    newCtx = { ...ctx, ...view.params };
+
+for (const key in newCtx) {
+  if (newCtx[key]?.__isAction) {
+    newCtx[key] = { ...newCtx[key], ...newCtx[key].apiFunc() };
   }
 }
 
-for (const key in newCtx) {
-  if (newCtx[key].__isAction) {
-    newCtx[key] = { ...newCtx[key], ...newCtx[key].apiFunc({ options: { silentFetch: true } }) };
+let updater = ref(0);
+if (typeof view !== 'string' && !Array.isArray(view)) {
+  if (view.params) {
+    for (const [param, value] of Object.entries(view.params)) {
+      if (value && typeof value === 'string') {
+        watchEffect(() => {
+          const oldVal = newCtx[param];
+          newCtx[param] = evaluateWithCtx(value, newCtx);
+          if (oldVal !== newCtx[param]) {
+            updater.value++;
+          }
+        });
+      }
+    }
   }
 }
 
@@ -51,7 +64,6 @@ const component = computed(() => {
     case 'navbar':
       return NavbarRenderer;
     default:
-      // console.error(`Unknown view type: ${view.type ?? 'hh'}`);
       return 'div';
   }
 });
@@ -62,8 +74,15 @@ const styles = computed(() => {
   }
   return {};
 });
+
+const showIf = computed(() => {
+  if (typeof view !== 'string' && !Array.isArray(view) && view.showIf) {
+    return evaluateWithCtx(view.showIf, newCtx);
+  }
+  return true;
+});
 </script>
 
 <template>
-  <component :is="component" :view :ctx="newCtx" :style="styles" />
+  <component v-if="showIf" :is="component" :view :ctx="newCtx" :style="styles" :key="updater" />
 </template>

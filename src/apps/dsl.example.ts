@@ -1,4 +1,4 @@
-import type { App, ViewNavbar } from './types';
+import type { App, ViewNavbar } from '../types';
 
 const navbar: ViewNavbar = {
   name: 'navbar',

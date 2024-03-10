@@ -1,3 +1,3 @@
-import app from './dsl.example';
+import app from './apps/freebook';
 
 export default app;

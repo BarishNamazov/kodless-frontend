@@ -17,25 +17,28 @@ export type BodyT = string | Date | number | boolean | null | undefined | BodyT[
 export async function useFetchy(
   url: string,
   method: HttpMethod,
-  options?: {
+  options: {
     query?: Record<string, string>;
     body?: BodyT;
     alert?: boolean;
     additionalParams?: Record<string, any>;
+    includeCredentials?: boolean;
   }
 ) {
   options = options ?? {};
   options.alert = options.alert ?? true;
+  options.includeCredentials = options.includeCredentials ?? true;
 
+  const additionalParams = options.additionalParams;
   // Check if url contains parameters like :id and replace them with the actual values from additionalParams
-  if (options.additionalParams) {
+  if (additionalParams) {
     // find all needed keys from url, but after the first /
     const keys = url.match(/\/:([a-zA-Z0-9]+)/g) ?? [];
     // replace all keys with the actual values
     keys.forEach((key) => {
       const keyName = key.slice(2);
-      let val = evaluateWithCtx(keyName, options.additionalParams);
-      val = evaluateWithCtx(val, options.additionalParams);
+      let val = evaluateWithCtx(keyName, additionalParams);
+      val = evaluateWithCtx(val, additionalParams);
       url = url.replace(key, '/' + val);
     });
   }
@@ -47,7 +50,9 @@ export async function useFetchy(
   const queryString = new URLSearchParams(options.query).toString();
   const fullUrl = `${url}?${queryString}`;
 
-  if ((method === 'GET' || method === 'DELETE') && options.body) {
+  console.log('body', options.body);
+
+  if (method === 'GET' && options.body) {
     throw new Error(`Cannot have a body with a ${method} request`);
   }
 
@@ -55,7 +60,8 @@ export async function useFetchy(
     method,
     headers: {
       'Content-Type': 'application/json'
-    }
+    },
+    credentials: options.includeCredentials ? 'include' : 'omit'
   };
 
   if (options.body) {

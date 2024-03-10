@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
 import app from './config';
-import { computed, onBeforeMount, onMounted } from 'vue';
+import { computed, onBeforeMount, onMounted, ref, watchEffect } from 'vue';
 import ViewRenderer from './components/ViewRenderer.vue';
 import type { View } from './types';
 import { useApi } from './composables/useApi';
 import { useFetchy } from './composables/useFetchy';
+import { evaluateWithCtx } from './eval';
 
 const route = useRoute();
 
@@ -35,10 +36,28 @@ for (const action of app.actions) {
   const apiFunc = (args: Record<string, any>, additionalParams: Record<string, any>) => {
     return useFetchy(action.path, action.method, {
       body: args[0] ?? {},
-      additionalParams
+      additionalParams,
+      includeCredentials: action.includeCredentials ?? true
     });
   };
   ctx[action.name] = { apiFunc: useApi(apiFunc, action.name, action.refreshes), __isAction: true };
+  ctx[action.name] = { ...ctx[action.name], ...ctx[action.name].apiFunc() };
+}
+
+// TODO: this is a hacky way to force a re-render when a param changes
+// VERY inefficient, but it works for now
+// WILL MAKE a lot of unnecessary API calls sometimes
+const updater = ref(0);
+for (const [param, value] of Object.entries(app.params ?? {})) {
+  if (value && typeof value === 'string') {
+    watchEffect(() => {
+      const oldVal = ctx[param];
+      ctx[param] = evaluateWithCtx(value, ctx);
+      if (oldVal !== ctx[param]) {
+        updater.value++;
+      }
+    });
+  }
 }
 
 onBeforeMount(() => {
@@ -51,7 +70,7 @@ onBeforeMount(() => {
 
 <template>
   <main>
-    <ViewRenderer :view :ctx :key="$route.fullPath" />
+    <ViewRenderer :view :ctx :key="$route.fullPath + updater" />
   </main>
 </template>
 

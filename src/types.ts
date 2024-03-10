@@ -26,12 +26,14 @@ export interface Action {
   returns: JSONTypeLiteral | Record<string, JSONTypeLiteral>; // the shape of the response, e.g., { posts: 'array' }
 
   refreshes?: string[]; // name of the actions to refresh once action is done, e.g., ['getPosts'] if this action is 'createPost'
+
+  includeCredentials?: boolean; // whether to include credentials in the request, default to true
 }
 
 export interface Form {
   name: string; // unique name of the form, e.g., createPost
   title?: string; // title of the form, e.g., 'Create Post'
-  params: Record<string, JSONTypeLiteral>; // "hidden" fields of this form, e.g., [{ id: 123 }]
+  params?: Record<string, JSONTypeLiteral>; // "hidden" fields of this form, e.g., [{ id: 123 }]
   fields: Array<FormField>; // visible fields of this form, e.g., [{ name: 'title', label: 'Title', required: true, type: 'text' }]
   action: string; // name of the action to call when the form is submitted, e.g., 'createPost'
 }
@@ -76,6 +78,7 @@ export interface ViewBase {
   type: string;
   params?: Record<string, JSONValue>;
   styles?: Partial<CSSStyleDeclaration>;
+  showIf?: string; // if given, the view will only be shown if the expression evaluates to true
 }
 
 // ViewText is a view that renders text
@@ -122,7 +125,7 @@ export interface ViewNavbar extends ViewBase {
 export interface ViewForm extends ViewBase {
   type: 'form';
   form: string; // name of the form to render
-  params: Record<string, JSONValue>; // params to pass to the form (i.e., the hidden fields of the form)
+  params?: Record<string, JSONValue>; // params to pass to the form (i.e., the hidden fields of the form)
   inline?: boolean; // whether to render the form inline
 }
 
@@ -145,4 +148,5 @@ export interface App {
   pages: Array<Page>;
   actions: Array<Action>;
   forms: Array<Form>;
+  params?: Record<string, JSONValue>;
 }

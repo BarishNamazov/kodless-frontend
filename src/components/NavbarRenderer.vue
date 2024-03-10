@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { defineProps } from 'vue';
 import type { ViewNavbar } from '@/types';
-import { RouterLink, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
+import ViewRenderer from './ViewRenderer.vue';
 
 const { view, ctx } = defineProps<{
   view: ViewNavbar;
@@ -15,7 +16,7 @@ const route = useRoute();
   <nav>
     <ul>
       <li v-for="(item, i) in view.links" :key="i">
-        <router-link :to="item.href" :class="{ active: item.href === route.path }">{{ item.text }}</router-link>
+        <ViewRenderer :view="item" :ctx="ctx" :class="{ active: item.href === route.path }" />
       </li>
     </ul>
   </nav>

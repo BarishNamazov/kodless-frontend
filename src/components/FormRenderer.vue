@@ -37,7 +37,7 @@ const handleSubmit = async (e: Event) => {
 
   let params: Record<string, any> = Object.fromEntries(formData.entries());
   const formParams = Object.fromEntries(
-    Object.entries(view.params).map(([key, value]) => [
+    Object.entries(view.params ?? {}).map(([key, value]) => [
       key,
       typeof value === 'string' ? evaluateWithCtx(value, ctx) : value
     ])

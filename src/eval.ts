@@ -41,7 +41,11 @@ export function evaluateWithCtx(thing: string, ctx: Record<string, any>) {
   while (true) {
     let result;
     if (thing.includes('{{')) {
-      result = evaluateStrWithCtx(thing, ctx);
+      try {
+        result = evaluateStrWithCtx(thing, ctx);
+      } catch (_) {
+        result = thing;
+      }
     } else {
       try {
         result = evaluateExpWithCtx(thing, ctx);
