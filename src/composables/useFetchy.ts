@@ -50,8 +50,6 @@ export async function useFetchy(
   const queryString = new URLSearchParams(options.query).toString();
   const fullUrl = `${url}?${queryString}`;
 
-  console.log('body', options.body);
-
   if (method === 'GET' && options.body) {
     throw new Error(`Cannot have a body with a ${method} request`);
   }

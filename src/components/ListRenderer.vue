@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, watch, watchEffect } from 'vue';
 import ViewRenderer from './ViewRenderer.vue';
 import type { ViewBase, ViewList } from '@/types';
 import { evaluateWithCtx } from '@/eval';
@@ -9,9 +9,14 @@ const { view, ctx } = defineProps<{
   ctx: Record<string, any>;
 }>();
 
-const list = computed(() => {
-  const l = evaluateWithCtx(view.value, ctx);
-  return l;
+if (view.emptyText === undefined) {
+  view.emptyText = 'No items found';
+}
+
+const list = ref([]);
+
+watchEffect(() => {
+  list.value = evaluateWithCtx(view.value, ctx);
 });
 
 const getCtx = (item: any) => {
@@ -29,10 +34,20 @@ const styles: ViewBase['styles'] = {
 
 const containerStyles = Array.isArray(view.container) ? {} : view.container.styles ?? {};
 
-const container = {
-  ...view.container,
-  styles: { ...styles, ...containerStyles }
-};
+const container = Array.isArray(view.container)
+  ? view.container
+  : {
+      ...view.container,
+      styles: { ...styles, ...containerStyles }
+    };
+
+watchEffect(() => {
+  if (list.value.length) {
+    console.log('ListRenderer', list.value);
+    console.log(ctx);
+    console.log(container);
+  }
+});
 </script>
 
 <template>
@@ -41,5 +56,5 @@ const container = {
       <ViewRenderer :view="container" :ctx="getCtx(item)" />
     </li>
   </ul>
-  <p v-else>No items found</p>
+  <p v-else-if="view.emptyText">{{ view.emptyText }}</p>
 </template>

@@ -1,4 +1,4 @@
-import type { App, ViewNavbar } from '../types';
+import type { App, View, ViewList, ViewNavbar } from '../types';
 
 const navbar: ViewNavbar = {
   name: 'navbar',
@@ -17,6 +17,32 @@ const navbar: ViewNavbar = {
     }
   ]
 };
+
+// Recursive view for comments
+const comments: ViewList = {
+  type: 'list',
+  emptyText: null,
+  value: 'commentsTree',
+  itemRef: 'commentItem',
+  styles: { marginLeft: '1em', borderLeft: '1px solid #ccc', paddingLeft: '1em' },
+  container: [
+    '@{{ commentItem.comment.author }}:',
+    '{{ commentItem.comment.content }}',
+    {
+      type: 'toggle',
+      text: 'Reply',
+      view: {
+        type: 'form',
+        form: 'makeCommentOnComment',
+        params: { id: 'commentItem.comment._id', author: 'user.username' }
+      }
+    }
+  ]
+};
+(comments.container as Array<View>).push({
+  ...comments,
+  params: { commentsTree: 'commentItem.children' }
+});
 
 const app: App = {
   name: 'Freebook',
@@ -90,6 +116,21 @@ const app: App = {
       params: {},
       returns: { content: 'string', author: 'string' },
       includeCredentials: false
+    },
+    {
+      name: 'makeComment',
+      method: 'POST',
+      path: 'http://localhost:5000/api/comments/:id',
+      params: { id: 'string', content: 'string', author: 'string' },
+      returns: { msg: 'string' },
+      refreshes: ['getComments']
+    },
+    {
+      name: 'getComments',
+      method: 'GET',
+      path: 'http://localhost:5000/api/comments/:id',
+      params: { id: 'string' },
+      returns: 'array'
     }
   ],
   forms: [
@@ -140,6 +181,46 @@ const app: App = {
         {
           name: 'submit',
           label: 'Post!',
+          type: 'submit'
+        }
+      ]
+    },
+    {
+      name: 'makeCommentOnPost',
+      action: 'makeComment',
+      title: 'Add a Comment',
+      params: { id: 'string', author: 'string' },
+      fields: [
+        {
+          name: 'content',
+          label: 'Your comment',
+          required: true,
+          placeholder: 'Type here...',
+          type: 'textarea'
+        },
+        {
+          name: 'submit',
+          label: 'Comment',
+          type: 'submit'
+        }
+      ]
+    },
+    {
+      name: 'makeCommentOnComment',
+      action: 'makeComment',
+      title: 'Reply to Comment',
+      params: { id: 'string', author: 'string' },
+      fields: [
+        {
+          name: 'content',
+          label: 'Your reply',
+          required: true,
+          placeholder: 'Type here...',
+          type: 'textarea'
+        },
+        {
+          name: 'submit',
+          label: 'Reply',
           type: 'submit'
         }
       ]
@@ -209,7 +290,7 @@ const app: App = {
           name: 'postsList',
           type: 'list',
           itemRef: 'post',
-          value: 'getPosts.loading ? [] : getPosts.data',
+          value: 'getPosts.loading ? [] : getPosts.data.reverse()',
           container: {
             type: 'container',
             children: [
@@ -217,7 +298,7 @@ const app: App = {
               '{{ post.content }}',
               {
                 type: 'container',
-                styles: { display: 'flex', alignItems: 'center', gap: '1em' },
+                styles: { display: 'flex', alignItems: 'center', gap: '1em', flexWrap: 'wrap' },
                 params: {
                   id: 'post._id',
                   upvoters: 'getUpvotes.loading ? [] : getUpvotes.data'
@@ -241,8 +322,23 @@ const app: App = {
                     params: { id: 'post._id' },
                     inline: true,
                     showIf: 'upvoters.includes(user.username)'
+                  },
+                  {
+                    type: 'toggle',
+                    text: 'Add a Comment',
+                    view: {
+                      styles: { width: '100%' },
+                      type: 'form',
+                      form: 'makeCommentOnPost',
+                      params: { id: 'post._id', author: 'user.username' }
+                    }
                   }
                 ]
+              },
+              {
+                type: 'container',
+                params: { id: 'post._id', commentsTree: 'getComments.loading ? [] : getComments.data' },
+                children: [comments]
               }
             ]
           }

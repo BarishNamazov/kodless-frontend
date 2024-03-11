@@ -108,6 +108,7 @@ export interface ViewList extends ViewBase {
   value: string;
   itemRef?: string;
   container: ViewContainer;
+  emptyText?: string | null; // defaults to "No items found"
 }
 
 // ViewContainer is a view that contains other views
@@ -129,10 +130,16 @@ export interface ViewForm extends ViewBase {
   inline?: boolean; // whether to render the form inline
 }
 
+export interface ViewToggle extends ViewBase {
+  type: 'toggle';
+  text: string;
+  view: View;
+}
+
 export type ViewText = ViewTextT | string;
 export type ViewContainer = ViewContainerT | Array<View>;
 
-export type View = ViewText | ViewLink | ViewImage | ViewList | ViewContainer | ViewForm | ViewNavbar;
+export type View = ViewText | ViewLink | ViewImage | ViewList | ViewContainer | ViewForm | ViewNavbar | ViewToggle;
 
 // Page is a collection of views
 export interface Page {

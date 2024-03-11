@@ -9,6 +9,8 @@ import ListRenderer from './ListRenderer.vue';
 import ImageRenderer from './ImageRenderer.vue';
 import FormRenderer from './FormRenderer.vue';
 import NavbarRenderer from './NavbarRenderer.vue';
+import ToggleRenderer from './ToggleRenderer.vue';
+
 import { evaluateWithCtx } from '@/eval';
 
 const { view, ctx } = defineProps<{
@@ -63,6 +65,8 @@ const component = computed(() => {
       return FormRenderer;
     case 'navbar':
       return NavbarRenderer;
+    case 'toggle':
+      return ToggleRenderer;
     default:
       return 'div';
   }
