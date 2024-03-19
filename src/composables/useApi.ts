@@ -13,7 +13,7 @@ export function refetchApi(key: string) {
 export function useApi<F extends Func>(apiFunction: F, key: string, refreshes?: string[]) {
   return (options?: { silentFetch?: boolean; silentError?: boolean }) => {
     const o = options || {};
-    o.silentFetch = o.silentFetch || false;
+    o.silentFetch = o.silentFetch || true;
     o.silentError = o.silentError || false;
 
     const data = ref<Awaited<ReturnType<F>> | null>(null);

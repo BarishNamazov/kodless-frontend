@@ -10,7 +10,7 @@ export type BodyT = string | Date | number | boolean | null | undefined | BodyT[
  * @param method The HTTP method to use
  * @param options.query The query parameters to add to the url
  * @param options.body The body to send
- * @param options.alert Whether to alert the user of the response message (default: true)
+ * @param options.toastParams If the response has a property with the name of one of these, alert the user
  * @returns The response body
  * @throws An error if the response is not ok
  */
@@ -20,13 +20,13 @@ export async function useFetchy(
   options: {
     query?: Record<string, string>;
     body?: BodyT;
-    alert?: boolean;
+    toastParams?: string[];
     additionalParams?: Record<string, any>;
     includeCredentials?: boolean;
   }
 ) {
   options = options ?? {};
-  options.alert = options.alert ?? true;
+  options.toastParams = options.toastParams ?? [];
   options.includeCredentials = options.includeCredentials ?? true;
 
   const additionalParams = options.additionalParams;
@@ -38,7 +38,7 @@ export async function useFetchy(
     keys.forEach((key) => {
       const keyName = key.slice(2);
       let val = evaluateWithCtx(keyName, additionalParams);
-      val = evaluateWithCtx(val, additionalParams);
+      // val = evaluateWithCtx(val, additionalParams);
       url = url.replace(key, '/' + val);
     });
   }
@@ -75,9 +75,10 @@ export async function useFetchy(
 
   const result = await response.json();
 
-  if (options.alert && result.msg) {
-    //console.log(result.msg);
-    // TODO: alert the user
+  for (const param of options.toastParams) {
+    if (result[param]) {
+      alert(result[param]);
+    }
   }
 
   if (!response.ok) {

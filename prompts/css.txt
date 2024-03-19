@@ -1,0 +1,1 @@
+For given code, output a style tag and CSS to make it look <describe the style, e.g. modern and cool>. Only style using classes or valid HTML tags. Only output code, no explanations.

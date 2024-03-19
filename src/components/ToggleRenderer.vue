@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import ViewRenderer from './ViewRenderer.vue';
-import type { ViewToggle } from '@/types';
-import { ref } from 'vue';
+import type { HrmlElement } from 'hrml/types';
+import { ref, type Ref } from 'vue';
+import ChildrenRenderer from './ChildrenRenderer.vue';
 
-const { view, ctx } = defineProps<{
-  view: ViewToggle;
+const { view } = defineProps<{
+  view: HrmlElement;
   ctx: Record<string, any>;
 }>();
 
-const toggle = ref(false);
+let toggle = view.attributes.default === 'show' ? ref(true) : ref(false);
 </script>
 
 <template>
-  <button @click="toggle = !toggle">{{ view.text }}</button>
-  <ViewRenderer v-if="toggle" :view="view.view" :ctx />
+  <button @click="toggle = !toggle">{{ view.attributes.text }}</button>
+  <div v-show="toggle">
+    <ChildrenRenderer :views="view.children" :ctx />
+  </div>
 </template>

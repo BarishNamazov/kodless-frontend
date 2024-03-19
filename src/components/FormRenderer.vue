@@ -1,62 +1,37 @@
 <script setup lang="ts">
-import type { FormField, ViewForm } from '@/types';
-import { h } from 'vue';
-import app from '@/config';
+import type { HrmlElement } from 'hrml/types';
+import ChildrenRenderer from './ChildrenRenderer.vue';
+import { ref } from 'vue';
+import { separateParams } from '@/util';
 import { evaluateWithCtx } from '@/eval';
 
-const { view, ctx } = defineProps<{
-  view: ViewForm;
-  ctx: Record<string, any>;
-}>();
+const { view, ctx } = defineProps<{ view: HrmlElement; ctx: Record<string, any> }>();
 
-const form = app.forms.find((form) => form.name === view.form);
+const { params } = separateParams(view.children);
 
-const renderFormField = (field: FormField) => {
-  switch (field.type) {
-    case 'text':
-      return h('label', [
-        field.label,
-        h('input', { placeholder: field.placeholder, name: field.name, required: field.required })
-      ]);
-    case 'textarea':
-      return h('label', [
-        field.label,
-        h('textarea', { placeholder: field.placeholder, name: field.name, required: field.required })
-      ]);
-    // TODO: Add more field types
-    case 'submit':
-      return h('button', field.label);
-    default:
-      return h('div', `Unknown field type: ${field.type}`);
-  }
-};
-
-const handleSubmit = async (e: Event) => {
+const form = ref<HTMLFormElement | null>(null);
+async function handleSubmit(e: Event) {
   e.preventDefault();
-  const formData = new FormData(e.target as HTMLFormElement);
+  let fields = Object.fromEntries(new FormData(form.value!).entries());
 
-  let params: Record<string, any> = Object.fromEntries(formData.entries());
-  const formParams = Object.fromEntries(
-    Object.entries(view.params ?? {}).map(([key, value]) => [
-      key,
-      typeof value === 'string' ? evaluateWithCtx(value, ctx) : value
-    ])
+  const hiddenFields = Object.fromEntries(
+    params.map((param) => {
+      return [param.name, param.value ? evaluateWithCtx(param.value, ctx) : evaluateWithCtx(param.name, ctx)];
+    })
   );
 
-  params = { ...params, ...formParams };
-  const { execute, setAdditionalParams } = ctx[form!.action];
-  setAdditionalParams(formParams);
-  await execute(params);
-  (e.target as HTMLFormElement).reset();
-};
+  const action = view.attributes.action;
+
+  const { execute, setAdditionalParams } = ctx[action];
+
+  setAdditionalParams(hiddenFields);
+  await execute({ ...fields, ...hiddenFields });
+  form.value!.reset();
+}
 </script>
 
 <template>
-  <p v-if="!form">Form not found: {{ view.form }}</p>
-  <form v-else @submit="handleSubmit" :class="{ inline: view.inline }">
-    <header v-if="form.title">{{ form.title }}</header>
-    <div v-for="(field, i) in form.fields" :key="i">
-      <component :is="renderFormField(field)" />
-    </div>
+  <form @submit="handleSubmit" ref="form" v-bind="view.attributes">
+    <ChildrenRenderer :views="view.children" :ctx="ctx" />
   </form>
 </template>

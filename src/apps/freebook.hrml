@@ -1,0 +1,125 @@
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="https://emojicdn.elk.sh/📚?style=google" type="image/x-icon">
+  <title>Freebook</title>
+</head>
+
+<actions baseUrl="http://localhost:5000">
+  <!-- If response from any request contains msg, it will be shown as a toast -->
+  <toast param="msg" />
+
+  <action name="getUser" method="GET" path="/api/session" returns="{username}" refreshOn="login, logout" />
+
+  <action name="login" method="POST" path="/api/login" params="{username}" />
+  <action name="logout" method="POST" path="/api/logout" />
+
+  <action name="getPosts" method="GET" path="/api/posts" returns="[{_id, dateCreated, dateUpdated, title, content}]"
+    refreshOn="createPost" />
+  <action name="createPost" method="POST" path="/api/posts" params="{title, content}" />
+
+  <action name="getUpvotes" method="GET" path="/api/posts/:id/upvotes" refreshOn="addUpvote, removeUpvote" />
+  <action name="addUpvote" method="POST" path="/api/posts/:id/upvote" />
+  <action name="removeUpvote" method="DELETE" path="/api/posts/:id/upvote" />
+
+  <action name="getQuote" method="GET" path="https://api.quotable.io/random" noCredentials />
+
+  <action name="getComments" method="GET" path="/api/posts/:id/comments/flat" returns="[{comment, depth}]"
+    refreshOn="makeComment" />
+  <action name="makeComment" method="POST" path="/api/comments/:id" params="{content}" />
+</actions>
+
+<pages>
+  <param name="user" value="getUser.error ? null : getUser.data" />
+
+  <header>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/posts" if="user">Posts</a>
+      <a href="/profile" if="user">Profile {{user.username}}</a>
+    </nav>
+  </header>
+
+  <page path="/" name="Home">
+    <main if="user">
+      <h1>Welcome, {{ user.username }}</h1>
+      <p>Below is a random quote for you:</p>
+      <p>{{ getQuote.data?.content ?? "Getting your quote..." }}</p>
+      <form action="logout">
+        <button type="submit">Logout</button>
+      </form>
+    </main>
+
+    <main else>
+      <h1>Welcome, guest!</h1>
+      <p>This is Freebook. You are free to be anyone.</p>
+      <form action="login">
+        <input type="text" name="username" placeholder="Enter your username" required />
+        <button type="submit">Login</button>
+      </form>
+    </main>
+  </page>
+
+  <page path="/posts" name="Posts" pageTitle="Freebook -- Posts" if="user">
+    <main>
+      <h1>Posts</h1>
+      <form action="createPost">
+        <label>
+          What's on your mind?
+          <textarea name="content" placeholder="Enter post content" required></textarea>
+        </label>
+        <button type="submit">Create Post</button>
+      </form>
+
+      <div>
+        <foreach items="getPosts.data" item="post">
+          <article>
+            <p>@{{post.author}} at {{new Date(post.dateCreated).toLocaleString()}}</p>
+            <p>{{post.content}}</p>
+            <div>
+              <param name="id" value="post._id" />
+              <param name="upvoters" value="getUpvotes.loading ? [] : getUpvotes.data" />
+
+              <p>Upvotes: {{upvoters.length}}</p>
+
+              <form action="addUpvote" if="!upvoters.includes(user.username)">
+                <param name="id" value="post._id" />
+                <button type="submit">Upvote</button>
+              </form>
+              <form action="removeUpvote" else>
+                <param name="id" value="post._id" />
+                <button type="submit">Remove Upvote</button>
+              </form>
+
+              <form action="makeComment">
+                <param name="id" value="post._id" />
+                <input type="textarea" name="content" placeholder="Enter your comment" required>
+                <button type="submit">Add a Comment</button>
+              </form>
+            </div>
+
+            <param name="id" value="post._id" />
+            <param name="comments" value="getComments.loading ? [] : getComments.data" />
+            <foreach items="comments" item="commentItem">
+              <div sstyle="margin-left: {{commentItem.depth}}em">
+                <p>{{commentItem.comment.author}}:</p>
+                <p>{{commentItem.comment.content}}</p>
+                <form action="makeComment">
+                  <param name="id" value="commentItem.comment._id" />
+                  <input type="textarea" name="content" placeholder="Enter your comment" required>
+                  <button type="submit">Reply</button>
+                </form>
+              </div>
+            </foreach>
+          </article>
+        </foreach>
+      </div>
+    </main>
+  </page>
+
+  <footer>
+    <p>This website is fully AI generated</p>
+  </footer>
+</pages>
+
+</html>

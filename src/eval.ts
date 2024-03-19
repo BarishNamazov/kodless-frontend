@@ -24,13 +24,17 @@ function createReactiveContext(ctx: Record<string, any>) {
   });
 }
 
-function evaluateStrWithCtx(str: string, ctx: Record<string, any>) {
+export function evaluateStrWithCtx(str: string, ctx: Record<string, any>) {
   return str.replace(/\{\{([^}]+)\}\}/g, (_, expression) => {
-    return evaluateExpWithCtx(expression, ctx);
+    try {
+      return evaluateExpWithCtx(expression, ctx);
+    } catch (_) {
+      return `{{${expression}}}`;
+    }
   });
 }
 
-function evaluateExpWithCtx(expression: string, ctx: Record<string, any>) {
+export function evaluateExpWithCtx(expression: string, ctx: Record<string, any>) {
   const ctxProxy = createReactiveContext(ctx);
   const func = new Function('ctx', `with(ctx) { return ${expression}; }`);
   return func(ctxProxy);

@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue';
-import type { ViewText } from '@/types';
-import { evaluateWithCtx } from '@/eval';
+import { evaluateStrWithCtx } from '@/eval';
+const { view, ctx: oldCtx } = defineProps<{ view: string; ctx: Record<string, any> }>();
 
-const { view, ctx } = defineProps<{
-  view: ViewText;
-  ctx: Record<string, any>;
-}>();
+const ctx = { ...oldCtx };
+for (const key in ctx) {
+  if (ctx[key]?.__isAction) {
+    ctx[key] = { ...ctx[key], ...ctx[key].apiFunc() };
+  }
+}
 
-const text = ref('...');
-
+const text = ref(view);
 watchEffect(() => {
-  text.value = evaluateWithCtx(typeof view === 'string' ? view : view.text, ctx);
+  text.value = evaluateStrWithCtx(view, ctx);
 });
 </script>
 
 <template>
-  <div>{{ text }}</div>
+  {{ text }}
 </template>
