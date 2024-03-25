@@ -11,7 +11,17 @@ function createReactiveContext(ctx: Record<string, any>) {
         if (!value.data) {
           return value;
         }
-        value.setAdditionalParams(ctx);
+
+        const params: Record<string, string> = {};
+        for (const key of value.__params) {
+          params[key] = target[key];
+        }
+
+        if (params) {
+          console.log(prop, params);
+        }
+
+        value.setAdditionalParams(params);
         return {
           ...value,
           data: safeValue(value.data),

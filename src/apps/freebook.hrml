@@ -5,43 +5,120 @@
   <title>Freebook</title>
 </head>
 
-<actions baseUrl="http://localhost:5000">
+<!-- use hyphen to name attrs -->
+<k-actions base-url="http://localhost:5000">
   <!-- If response from any request contains msg, it will be shown as a toast -->
-  <toast param="msg" />
+  <k-toast param="msg" />
 
-  <action name="getUser" method="GET" path="/api/session" returns="{username}" refreshOn="login, logout" />
+  <!-- Default method: GET -->
+  <k-action name="getUser" method="GET" path="/api/session" returns="{username}" refresh-on="login, logout" />
 
-  <action name="login" method="POST" path="/api/login" params="{username}" />
-  <action name="logout" method="POST" path="/api/logout" />
+  <k-action name="login" method="POST" path="/api/login" params="username" />
+  <k-action name="logout" method="POST" path="/api/logout" />
 
-  <action name="getPosts" method="GET" path="/api/posts" returns="[{_id, dateCreated, dateUpdated, title, content}]"
-    refreshOn="createPost" />
-  <action name="createPost" method="POST" path="/api/posts" params="{title, content}" />
+  <k-action name="getPosts" method="GET" path="/api/posts" params="page, count"
+    returns="[{_id, dateCreated, dateUpdated, title, content}]" refresh-on="createPost" />
 
-  <action name="getUpvotes" method="GET" path="/api/posts/:id/upvotes" refreshOn="addUpvote, removeUpvote" />
-  <action name="addUpvote" method="POST" path="/api/posts/:id/upvote" />
-  <action name="removeUpvote" method="DELETE" path="/api/posts/:id/upvote" />
+  <k-action name="createPost" method="POST" path="/api/posts" params="title, content" />
 
-  <action name="getQuote" method="GET" path="https://api.quotable.io/random" noCredentials />
+  <k-action name="getUpvotes" method="GET" path="/api/posts/:id/upvotes" refresh-on="addUpvote, removeUpvote" />
+  <k-action name="addUpvote" method="POST" path="/api/posts/:id/upvote" />
+  <k-action name="removeUpvote" method="DELETE" path="/api/posts/:id/upvote" />
 
-  <action name="getComments" method="GET" path="/api/posts/:id/comments/flat" returns="[{comment, depth}]"
-    refreshOn="makeComment" />
-  <action name="makeComment" method="POST" path="/api/comments/:id" params="{content}" />
-</actions>
+  <k-action name="getQuote" method="GET" path="https://api.quotable.io/random" no-credentials />
 
-<pages>
-  <param name="user" value="getUser.error ? null : getUser.data" />
+  <k-action name="getComments" method="GET" path="/api/posts/:id/comments/flat" returns="[{comment, depth}]"
+    refresh-on="makeComment" />
+  <k-action name="makeComment" method="POST" path="/api/comments/:id" params="content" />
+</k-actions>
+
+<!-- HTML compatibility: multiple words for custom element -->
+
+<body>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background-color: #F0F4F8;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    header,
+    footer {
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      padding: 1em 0;
+    }
+
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 15px;
+    }
+
+    nav a:hover {
+      color: #4b8bf5;
+    }
+
+    main {
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    form {
+      margin-top: 20px;
+    }
+
+    input[type="text"],
+    textarea {
+      width: calc(100% - 22px);
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    button {
+      background-color: #4b8bf5;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #357ABD;
+    }
+
+    article {
+      background-color: #fff;
+      border-radius: 5px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+
+  <k-param name="user" value="getUser.error ? null : getUser.data" />
 
   <header>
     <nav>
       <a href="/">Home</a>
-      <a href="/posts" if="user">Posts</a>
-      <a href="/profile" if="user">Profile {{user.username}}</a>
+      <a href="/posts" k-if="user">Posts</a>
+      <a href="/profile" k-if="user">Profile {{user.username}}</a>
     </nav>
   </header>
 
-  <page path="/" name="Home">
-    <main if="user">
+  <k-page path="/" name="Home">
+    <main k-if="user">
       <h1>Welcome, {{ user.username }}</h1>
       <p>Below is a random quote for you:</p>
       <p>{{ getQuote.data?.content ?? "Getting your quote..." }}</p>
@@ -50,7 +127,7 @@
       </form>
     </main>
 
-    <main else>
+    <main k-else>
       <h1>Welcome, guest!</h1>
       <p>This is Freebook. You are free to be anyone.</p>
       <form action="login">
@@ -58,9 +135,9 @@
         <button type="submit">Login</button>
       </form>
     </main>
-  </page>
+  </k-page>
 
-  <page path="/posts" name="Posts" pageTitle="Freebook -- Posts" if="user">
+  <k-page path="/posts?page=1&count=1" name="Posts" title="Freebook -- Posts" k-if="user">
     <main>
       <h1>Posts</h1>
       <form action="createPost">
@@ -72,52 +149,52 @@
       </form>
 
       <div>
-        <foreach items="getPosts.data" item="post">
+        <k-foreach items="getPosts.loading ? [] : getPosts.data.reverse()" item="post">
           <article>
             <p>@{{post.author}} at {{new Date(post.dateCreated).toLocaleString()}}</p>
             <p>{{post.content}}</p>
             <div>
-              <param name="id" value="post._id" />
-              <param name="upvoters" value="getUpvotes.loading ? [] : getUpvotes.data" />
+              <k-param name="id" value="post._id" />
+              <k-param name="upvoters" value="getUpvotes.loading ? [] : getUpvotes.data" />
 
               <p>Upvotes: {{upvoters.length}}</p>
 
-              <form action="addUpvote" if="!upvoters.includes(user.username)">
-                <param name="id" value="post._id" />
+              <form action="addUpvote" k-if="!upvoters.includes(user.username)">
+                <k-param name="id" value="post._id" />
                 <button type="submit">Upvote</button>
               </form>
-              <form action="removeUpvote" else>
-                <param name="id" value="post._id" />
+              <form action="removeUpvote" k-else>
+                <k-param name="id" value="post._id" />
                 <button type="submit">Remove Upvote</button>
               </form>
 
               <form action="makeComment">
-                <param name="id" value="post._id" />
+                <k-param name="id" value="post._id" />
                 <input type="textarea" name="content" placeholder="Enter your comment" required>
                 <button type="submit">Add a Comment</button>
               </form>
             </div>
 
-            <param name="id" value="post._id" />
-            <param name="comments" value="getComments.loading ? [] : getComments.data" />
-            <foreach items="comments" item="commentItem">
-              <div sstyle="margin-left: {{commentItem.depth}}em">
+            <k-param name="id" value="post._id" />
+            <k-param name="comments" value="getComments.loading ? [] : getComments.data" />
+            <k-foreach items="comments" item="commentItem">
+              <div k-style="margin-left: {{commentItem.depth}}em">
                 <p>{{commentItem.comment.author}}:</p>
                 <p>{{commentItem.comment.content}}</p>
                 <form action="makeComment">
-                  <param name="id" value="commentItem.comment._id" />
+                  <k-param name="id" value="commentItem.comment._id" />
                   <input type="textarea" name="content" placeholder="Enter your comment" required>
                   <button type="submit">Reply</button>
                 </form>
               </div>
-            </foreach>
+            </k-foreach>
           </article>
-        </foreach>
+        </k-foreach>
       </div>
     </main>
-  </page>
+  </k-page>
 
   <footer>
     <p>This website is fully AI generated</p>
   </footer>
-</pages>
+</body>

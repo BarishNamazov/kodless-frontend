@@ -1,5 +1,5 @@
-import type { View } from 'hrml/types';
 import { ref, watchEffect, type Ref } from 'vue';
+import { PARAM_TAG, type View } from '../hrml/types';
 import { evaluateWithCtx } from './eval';
 
 export function separateParams(hrmlElements: View[]) {
@@ -7,7 +7,7 @@ export function separateParams(hrmlElements: View[]) {
   const views: View[] = [];
 
   for (const child of hrmlElements) {
-    if (typeof child === 'object' && child.tag === 'param') {
+    if (typeof child === 'object' && child.tag === PARAM_TAG) {
       params.push({ name: child.attributes.name, value: child.attributes.value });
     } else {
       views.push(child);

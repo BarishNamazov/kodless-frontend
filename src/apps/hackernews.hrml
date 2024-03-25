@@ -1,0 +1,119 @@
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="https://emojicdn.elk.sh/📚?style=google" type="image/x-icon">
+  <title>Mocker News</title>
+</head>
+
+<k-actions base-url="http://localhost:5000">
+  <!-- Default method: GET -->
+  <k-action name="getSession" method="GET" path="/api/session" refreshOn="login, logout" />
+  <k-action name="login" method="POST" path="/api/login" />
+  <k-action name="logout" method="POST" path="/api/logout" />
+
+
+
+</k-actions>
+
+<!-- HTML compatibility: multiple words for custom element -->
+
+<k-pages>
+  <!-- fallback in the slot -->
+  <k-param name="user" value="getUser.data">null</k-param>
+
+  <header>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/posts" k-if="user">Posts</a>
+      <a href="/profile" k-if="user">Profile {{user.username}}</a>
+    </nav>
+  </header>
+
+  <!-- support src for page -->
+  <!-- <page src="" /> -->
+
+  <k-page path="/" name="Home">
+    <main if="user">
+      <h1>Welcome, {{ user.username }}</h1>
+      <p>Below is a random quote for you:</p>
+      <p>{{ getQuote.data?.content ?? "Getting your quote..." }}</p>
+      <form action="logout">
+        <button type="submit">Logout</button>
+      </form>
+    </main>
+
+    <main else>
+      <h1>Welcome, guest!</h1>
+      <p>This is Freebook. You are free to be anyone.</p>
+      <form action="login">
+        <!-- formmethod -->
+        <input type="text" name="username" placeholder="Enter your username" required />
+        <button type="submit">Login</button>
+      </form>
+    </main>
+  </k-page>
+
+  <k-page path="/posts" title="Freebook -- Posts" if="user">
+    <main>
+      <h1>Posts</h1>
+      <form action="createPost">
+        <label>
+          What's on your mind?
+          <textarea name="content" placeholder="Enter post content" required></textarea>
+        </label>
+        <!-- type=submit default -->
+        <button type="submit">Create Post</button>
+      </form>
+
+      <div>
+        <!-- index for foreach -->
+        <foreach items="getPosts.data" item="post">
+          <article>
+            <p>@{{post.author}} at {{new Date(post.dateCreated).toLocaleString()}}</p>
+            <p>{{post.content}}</p>
+            <div>
+              <param name="id" value="post._id" />
+              <param name="upvoters" value="getUpvotes.loading ? [] : getUpvotes.data" />
+
+              <p>Upvotes: {{upvoters.length}}</p>
+
+              <form action="addUpvote" if="!upvoters.includes(user.username)">
+                <param name="id" value="post._id" />
+                <button type="submit">Upvote</button>
+              </form>
+              <form action="removeUpvote" else>
+                <param name="id" value="post._id" />
+                <button type="submit">Remove Upvote</button>
+              </form>
+
+              <form action="makeComment">
+                <param name="id" value="post._id" />
+                <input type="textarea" name="content" placeholder="Enter your comment" required>
+                <button type="submit">Add a Comment</button>
+              </form>
+            </div>
+
+            <param name="id" value="post._id" />
+            <param name="comments" value="getComments.loading ? [] : getComments.data" />
+            <foreach items="comments" item="commentItem">
+              <!-- rename sstyle to ?? computed-style / :style / k-style -->
+              <div sstyle="margin-left: {{commentItem.depth}}em">
+                <p>{{commentItem.comment.author}}:</p>
+                <p>{{commentItem.comment.content}}</p>
+                <form action="makeComment">
+                  <param name="id" value="commentItem.comment._id" />
+                  <input type="textarea" name="content" placeholder="Enter your comment" required>
+                  <button type="submit">Reply</button>
+                </form>
+              </div>
+            </foreach>
+          </article>
+        </foreach>
+      </div>
+    </main>
+  </k-page>
+
+  <footer>
+    <p>This website is fully AI generated</p>
+  </footer>
+</k-pages>

@@ -38,9 +38,12 @@ export async function useFetchy(
     keys.forEach((key) => {
       const keyName = key.slice(2);
       let val = evaluateWithCtx(keyName, additionalParams);
-      // val = evaluateWithCtx(val, additionalParams);
       url = url.replace(key, '/' + val);
+      delete additionalParams[keyName];
     });
+
+    // add any additional parameters to the query
+    options.query = { ...options.query, ...additionalParams };
   }
 
   if (options.body && JSON.stringify(options.body) === '{}') {

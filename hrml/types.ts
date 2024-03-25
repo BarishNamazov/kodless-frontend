@@ -10,14 +10,15 @@ export type Text = string;
 
 export type View = HrmlElement | Text;
 
-export type PageElement = {
-  tag: 'page';
+export interface PageElement extends HrmlElement {
+  tag: 'k-page';
   attributes: {
     pageTitle?: string;
     path: string;
   };
   children: Array<View>;
-};
+  params?: Record<string, string>;
+}
 
 export type Action = {
   name: string;
@@ -35,7 +36,19 @@ export type HRMLParserResult = {
 
   actions: Array<Action>;
   toastParams: string[];
-  baseUrl?: string;
+  'base-url'?: string;
 
   pages: Array<PageElement>;
 };
+
+export const ACTIONS_TAG = 'k-actions';
+export const ACTION_TAG = 'k-action';
+export const TOAST_TAG = 'k-toast';
+
+export const PAGE_TAG = 'k-page';
+export const PARAM_TAG = 'k-param';
+export const FOREACH_TAG = 'k-foreach';
+
+export const IF_ATTR = 'k-if';
+export const ELSE_ATTR = 'k-else';
+export const STYLE_ATTR = 'k-style';

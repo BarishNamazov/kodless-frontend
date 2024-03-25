@@ -2,7 +2,8 @@
 import { computed, onMounted, ref, watchEffect } from 'vue';
 import { RouterLink } from 'vue-router';
 import { evaluateWithCtx } from '@/eval';
-import type { HrmlElement } from 'hrml/types';
+import { type HrmlElement } from 'hrml/types';
+import { FOREACH_TAG, STYLE_ATTR, IF_ATTR } from '@/../hrml/types';
 import { listenToParams, separateParams } from '@/util';
 
 import ChildrenRenderer from './ChildrenRenderer.vue';
@@ -10,7 +11,7 @@ import ForEachRenderer from './ForEachRenderer.vue';
 import FormRenderer from './FormRenderer.vue';
 
 // For these, we need to calculate params for each child separately
-const TAGS_WITH_SPECIAL_CTX = ['foreach', 'tree'];
+const TAGS_WITH_SPECIAL_CTX = [FOREACH_TAG];
 
 const { view, ctx: oldCtx } = defineProps<{ view: HrmlElement; ctx: Record<string, any> }>();
 
@@ -30,10 +31,10 @@ if (!TAGS_WITH_SPECIAL_CTX.includes(view.tag)) {
 }
 
 const show = computed(() => {
-  if (!view.attributes.if) {
+  if (!view.attributes[IF_ATTR]) {
     return true;
   }
-  return evaluateWithCtx(view.attributes.if, ctx);
+  return evaluateWithCtx(view.attributes[IF_ATTR], ctx);
 });
 
 const styles = computed(() => {
@@ -52,8 +53,8 @@ const styles = computed(() => {
   };
 
   const styles = view.attributes.style ? cssToObj(view.attributes.style) : {};
-  const sstyles = view.attributes.sstyle ? cssToObj(evaluateWithCtx(view.attributes.sstyle, ctx)) : {};
-  return { ...styles, ...sstyles };
+  const kStyles = view.attributes[STYLE_ATTR] ? cssToObj(evaluateWithCtx(view.attributes[STYLE_ATTR], ctx)) : {};
+  return { ...styles, ...kStyles };
 });
 
 const thisRef = ref<HTMLElement | null>(null);
@@ -70,7 +71,7 @@ if ('log' in view.attributes) {
 
 <template>
   <template v-if="!!show">
-    <template v-if="view.tag === 'foreach'" ref="thisRef">
+    <template v-if="view.tag === FOREACH_TAG">
       <ForEachRenderer :view :ctx :key="updater" />
     </template>
 
@@ -83,14 +84,6 @@ if ('log' in view.attributes) {
     <template v-else-if="view.tag === 'form'">
       <FormRenderer :view :ctx :key="updater" :style="styles" ref="thisRef" />
     </template>
-
-    <!-- <template v-else-if="view.tag === 'toggle'">
-      <ToggleRenderer :view :ctx :key="updater" :style="styles" />
-    </template> -->
-
-    <!-- <template v-else-if="view.tag === 'tree'">
-      <TreeRenderer :view :ctx :key="updater" />
-    </template> -->
 
     <component v-else :is="view.tag" v-bind="view.attributes" :key="updater" :style="styles" ref="thisRef">
       <ChildrenRenderer :views="children" :ctx />

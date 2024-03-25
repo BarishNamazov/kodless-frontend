@@ -1,5 +1,14 @@
 import { HTMLElement, parse } from 'node-html-parser';
-import { Action, HRMLParserResult, HrmlElement, PageElement } from './types';
+import {
+  ACTIONS_TAG,
+  ACTION_TAG,
+  Action,
+  HRMLParserResult,
+  HrmlElement,
+  PAGE_TAG,
+  PageElement,
+  TOAST_TAG
+} from './types';
 
 export default function hrmlParser(code: string): HRMLParserResult {
   const parsed = parse(code);
@@ -9,8 +18,8 @@ export default function hrmlParser(code: string): HRMLParserResult {
     console.warn('No head tag found in the HRML file. Usign default head.');
   }
 
-  const actionsContainer = parsed.getElementsByTagName('actions')[0];
-  const actions = actionsContainer.getElementsByTagName('action').map((action) => {
+  const actionsContainer = parsed.getElementsByTagName(ACTIONS_TAG)[0];
+  const actions = actionsContainer.getElementsByTagName(ACTION_TAG).map((action) => {
     const { refreshOn, ...attrs } = action.attributes;
     if (!attrs.name || !attrs.method || !attrs.path) {
       throw new Error(`Action must have name, method, and path attributes. Found:\n ${action.outerHTML}`);
@@ -18,20 +27,20 @@ export default function hrmlParser(code: string): HRMLParserResult {
 
     return {
       ...attrs,
-      noCredentials: 'noCredentials' in action.attributes,
+      noCredentials: 'no-credentials' in action.attributes,
       refreshOn: action
-        .getAttribute('refreshOn')
+        .getAttribute('refresh-on')
         ?.split(',')
         .map((s) => s.trim())
     } as Action;
   });
 
   const toastParams = actionsContainer
-    .getElementsByTagName('toast')
+    .getElementsByTagName(TOAST_TAG)
     .map((toast) => toast.getAttribute('param') ?? '')
     .filter((param) => param.length > 0);
 
-  const pagesContainer = parsed.getElementsByTagName('pages')[0];
+  const pagesContainer = parsed.getElementsByTagName('body')[0];
   if (!pagesContainer) {
     throw new Error('No pages tag found in the HRML file.');
   }
@@ -58,11 +67,20 @@ export default function hrmlParser(code: string): HRMLParserResult {
     throw new Error('Put in some tags inside pages :(');
   }
 
+  (pages.children as HrmlElement[])
+    .filter((page) => page.tag === PAGE_TAG)
+    .forEach((page) => {
+      if ('title' in page.attributes) {
+        page.attributes.pageTitle = (page.attributes['title'] as string) ?? page.attributes.pageTitle;
+        delete page.attributes['title'];
+      }
+    });
+
   return {
     head: headHTML,
     actions,
     toastParams,
-    baseUrl: actionsContainer.getAttribute('baseUrl'),
+    'base-url': actionsContainer.getAttribute('base-url'),
     pages: pages.children as PageElement[]
   };
 }
