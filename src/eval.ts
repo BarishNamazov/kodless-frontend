@@ -14,11 +14,9 @@ function createReactiveContext(ctx: Record<string, any>) {
 
         const params: Record<string, string> = {};
         for (const key of value.__params) {
-          params[key] = target[key];
-        }
-
-        if (params) {
-          console.log(prop, params);
+          if (target[key]) {
+            params[key] = target[key];
+          }
         }
 
         value.setAdditionalParams(params);

@@ -137,7 +137,7 @@
     </main>
   </k-page>
 
-  <k-page path="/posts?page=1&count=1" name="Posts" title="Freebook -- Posts" k-if="user">
+  <k-page path="/posts?page=1" name="Posts" title="Freebook -- Posts" k-if="user">
     <main>
       <h1>Posts</h1>
       <form action="createPost">
