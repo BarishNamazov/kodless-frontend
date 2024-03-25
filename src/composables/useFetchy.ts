@@ -28,8 +28,10 @@ export async function useFetchy(
   options = options ?? {};
   options.toastParams = options.toastParams ?? [];
   options.includeCredentials = options.includeCredentials ?? true;
+  options.query = options.query ?? {};
 
   const additionalParams = options.additionalParams;
+
   // Check if url contains parameters like :id and replace them with the actual values from additionalParams
   if (additionalParams) {
     // find all needed keys from url, but after the first /

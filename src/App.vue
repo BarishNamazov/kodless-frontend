@@ -51,7 +51,7 @@ function handleActions() {
     ctx[action.name] = {
       apiFunc: useApi(apiFunc, action.name, refreshes[action.name]),
       __isAction: true,
-      __params: params
+      params
     };
 
     ctx[action.name] = { ...ctx[action.name], ...ctx[action.name].apiFunc() };
@@ -123,19 +123,27 @@ const setupPage = () => {
     pageParams.value = { ...page.params, ...q };
     document.title = page.attributes.pageTitle ?? title;
   }
+
   return page;
 };
 
 let currentPage = ref(setupPage());
 router.afterEach(() => {
+  const oldPageParams = pageParams.value;
   currentPage.value = setupPage();
+  // Very inefficient -- do better later
+  if (JSON.stringify(oldPageParams) !== JSON.stringify(pageParams.value)) {
+    updater.value++;
+  }
 });
 </script>
 
 <template>
-  <template v-for="view in views" :key="updater">
-    <TextRenderer v-if="typeof view === 'string'" :view :ctx />
-    <HrmlRenderer v-else-if="view.tag !== PAGE_TAG" :view :ctx />
-    <HrmlRenderer v-else-if="view === toRaw(currentPage)" :view :ctx="{ ...ctx, ...pageParams }" />
-  </template>
+  <div id="k-body">
+    <template v-for="view in views" :key="updater">
+      <TextRenderer v-if="typeof view === 'string'" :view :ctx />
+      <HrmlRenderer v-else-if="view.tag !== PAGE_TAG" :view :ctx />
+      <HrmlRenderer v-else-if="view === toRaw(currentPage)" :view :ctx="{ ...ctx, ...pageParams }" />
+    </template>
+  </div>
 </template>

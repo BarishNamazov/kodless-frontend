@@ -1,0 +1,171 @@
+:root {
+  --topbar: #ff6600;
+  --gray: #828282;
+}
+
+body {
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 10pt;
+  color: var(--gray);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #000;
+}
+
+#k-body {
+  margin: 0 auto;
+  width: 85%;
+  min-width: 796px;
+  background-color: #f6f6ef;
+}
+
+a {
+  color: #000;
+  text-decoration: none;
+
+  &:visited {
+    color: var(--gray);
+  }
+}
+
+input[type='submit'],
+button[type='submit'] {
+  font-family: monospace;
+}
+
+header {
+  background-color: var(--topbar);
+  padding: 2px;
+  line-height: 12px;
+  color: #000;
+
+  a:visited {
+    color: #000;
+  }
+
+  margin-bottom: 10px;
+}
+
+header img {
+  height: 18px;
+  vertical-align: middle;
+  border: 1px solid white;
+  margin-right: 4px;
+  transform: rotate(180deg);
+}
+
+.hn-name {
+  margin-left: 1px;
+  margin-right: 5px;
+}
+
+nav,
+nav > *,
+.vcenter {
+  display: flex;
+  align-items: center;
+}
+
+.nav-left a,
+.w-end {
+  margin: 0 0.5ch;
+}
+
+.nav-right {
+  margin-left: auto;
+  margin-right: 4px;
+}
+
+hr {
+  border: 1px solid var(--topbar);
+}
+footer {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding-bottom: 1em;
+
+  .links {
+    display: flex;
+    justify-content: center;
+    margin: 1em 0;
+    font-size: 8pt;
+  }
+
+  .links a {
+    margin: 0 0.5ch;
+  }
+}
+
+/* Home page */
+
+article {
+  .post {
+    display: flex;
+    align-items: center;
+
+    .title {
+      margin-right: 5px;
+    }
+    .domain {
+      color: var(--gray);
+      font-size: 8pt;
+    }
+  }
+
+  .subtext {
+    margin-left: calc(2ch + 22px);
+    font-size: 7pt;
+    color: var(--gray);
+    margin-bottom: 5px;
+
+    a {
+      color: var(--gray);
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+/* Submit page */
+.submit {
+  display: block;
+  padding-left: 4px;
+}
+
+/* Profile page */
+.profile-page {
+  a {
+    text-decoration: underline;
+  }
+}
+
+.vote-arrow {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 0;
+  margin: 3px 2px 5px;
+  background:
+    url('/triangle.svg'),
+    linear-gradient(transparent, transparent) no-repeat;
+  cursor: pointer;
+}
+
+.voted {
+  color: var(--topbar);
+  width: 10px;
+  height: 10px;
+  margin: 0px 2px 5px;
+}
+
+.no-show {
+  visibility: hidden;
+}

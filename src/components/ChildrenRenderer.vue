@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { type HrmlElement, type View } from 'hrml/types';
-import { IF_ATTR, ELSE_ATTR } from '@/../hrml/types';
+import { IF_ATTR, ELSE_ATTR, type HrmlElement, type View } from '@/../hrml/types';
 import TextRenderer from './TextRenderer.vue';
 import HrmlRenderer from './HrmlRenderer.vue';
+import { evaluateWithCtx } from '@/eval';
+import router from '@/router';
 
 const { views, ctx } = defineProps<{ views: View[]; ctx: Record<string, any> }>();
 

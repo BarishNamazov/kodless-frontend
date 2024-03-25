@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 function safeValue(x: any) {
   return !x ? x : x.value;
 }
@@ -13,7 +15,7 @@ function createReactiveContext(ctx: Record<string, any>) {
         }
 
         const params: Record<string, string> = {};
-        for (const key of value.__params) {
+        for (const key of value.params) {
           if (target[key]) {
             params[key] = target[key];
           }
@@ -44,8 +46,11 @@ export function evaluateStrWithCtx(str: string, ctx: Record<string, any>) {
 
 export function evaluateExpWithCtx(expression: string, ctx: Record<string, any>) {
   const ctxProxy = createReactiveContext(ctx);
+  ctxProxy.moment = moment;
   const func = new Function('ctx', `with(ctx) { return ${expression}; }`);
-  return func(ctxProxy);
+  const result = func(ctxProxy);
+  delete ctxProxy.moment;
+  return result;
 }
 
 export function evaluateWithCtx(thing: string, ctx: Record<string, any>) {
@@ -63,6 +68,9 @@ export function evaluateWithCtx(thing: string, ctx: Record<string, any>) {
         result = evaluateExpWithCtx(thing, ctx);
         if (result === undefined) {
           result = thing;
+        }
+        if (typeof result === 'string') {
+          return result;
         }
       } catch (_) {
         result = thing;

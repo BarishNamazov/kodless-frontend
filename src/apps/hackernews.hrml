@@ -1,119 +1,243 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="https://emojicdn.elk.sh/📚?style=google" type="image/x-icon">
-  <title>Mocker News</title>
+  <link rel="shortcut icon" href="/src/assets/y18.svg" type="image/x-icon">
+  <link rel="stylesheet" href="/src/assets/hn.css">
+  <title>Hacked News</title>
 </head>
 
 <k-actions base-url="http://localhost:5000">
-  <!-- Default method: GET -->
-  <k-action name="getSession" method="GET" path="/api/session" refreshOn="login, logout" />
-  <k-action name="login" method="POST" path="/api/login" />
-  <k-action name="logout" method="POST" path="/api/logout" />
+  <k-action name="getSession" path="/api/session" refresh-on="login, logout, register" />
+  <k-action name="login" path="/api/login" method="POST" params="username, password" />
+  <k-action name="register" path="/api/register" method="POST" params="username, password" />
+  <k-action name="logout" path="/api/logout" method="POST" />
 
+  <k-action name="getUser" path="/api/users" params="username" />
 
+  <k-action name="submit" path="/api/posts" method="POST" params="title, url, text" />
 
+  <k-action name="getPosts" path="/api/posts" params="page, prefix, date" refresh-on="votePost" />
+  <k-action name="getRecentPosts" path="/api/posts/recent" params="page, prefix" refresh-on="votePost" />
+
+  <k-action name="votePost" path="/api/posts/:id/vote" method="POST" params="voteType" />
 </k-actions>
 
-<!-- HTML compatibility: multiple words for custom element -->
+<body>
 
-<k-pages>
-  <!-- fallback in the slot -->
-  <k-param name="user" value="getUser.data">null</k-param>
+  <k-param name="user" value="getSession.error ? null : getSession.data" />
 
   <header>
+    <k-param name="yesterday" value="new Date().toISOString().split('T')[0]" />
+
     <nav>
-      <a href="/">Home</a>
-      <a href="/posts" k-if="user">Posts</a>
-      <a href="/profile" k-if="user">Profile {{user.username}}</a>
+      <a href="/" class="vcenter"> <img src="/src/assets/y18.svg" alt="YC Logo"><b class="hn-name">Hacked News</b>
+      </a>
+      <span class="nav-left">
+        <a href="/?list=new">new</a>
+        |
+        <a href="/threads" k-if="user">threads</a>
+        <span k-if="user">|</span>
+        <a href="/?list=past&date={{yesterday}}">past</a>
+        |
+        <a href="/newcomments">comments</a>
+        |
+        <a href="/?list=ask">ask</a>
+        |
+        <a href="/?list=show">show</a>
+        |
+        <a href="/?list=jobs">jobs</a>
+        |
+        <a href="/submit">submit</a>
+      </span>
+      <span class="nav-right">
+        <span k-if="user" class="w-end">
+          <a href="/user?id={{user.username}}">{{user.username}}</a>
+          ({{user.karma}}) |
+        </span>
+        <a href="/login" k-if="!user">login</a>
+        <a href="#logout" k-click="logout" k-else>logout</a>
+      </span>
     </nav>
   </header>
 
-  <!-- support src for page -->
-  <!-- <page src="" /> -->
-
-  <k-page path="/" name="Home">
-    <main if="user">
-      <h1>Welcome, {{ user.username }}</h1>
-      <p>Below is a random quote for you:</p>
-      <p>{{ getQuote.data?.content ?? "Getting your quote..." }}</p>
-      <form action="logout">
-        <button type="submit">Logout</button>
-      </form>
-    </main>
-
-    <main else>
-      <h1>Welcome, guest!</h1>
-      <p>This is Freebook. You are free to be anyone.</p>
-      <form action="login">
-        <!-- formmethod -->
-        <input type="text" name="username" placeholder="Enter your username" required />
-        <button type="submit">Login</button>
-      </form>
-    </main>
+  <k-page path="/login" name="Login">
+    <k-redirect k-if="user" to="/" />
+    <form action="login" redirect="/">
+      <h2>Login</h2>
+      <table>
+        <tbody>
+          <tr>
+            <td>username:</td>
+            <td><input type="text" name="username" autocomplete="off"></td>
+          </tr>
+          <tr>
+            <td>password:</td>
+            <td><input type="password" name="password"></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><button type="submit">login</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <a href="/forgot" style="text-decoration: underline;">Forgot your password?</a>
+    </form>
+    <form action="register" redirect="/">
+      <h2>Create Account</h2>
+      <table>
+        <tbody>
+          <tr>
+            <td>username:</td>
+            <td><input type="text" name="username" autocomplete="off"></td>
+          </tr>
+          <tr>
+            <td>password:</td>
+            <td><input type="password" name="password"></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><button type="submit">create account</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
   </k-page>
 
-  <k-page path="/posts" title="Freebook -- Posts" if="user">
-    <main>
-      <h1>Posts</h1>
-      <form action="createPost">
-        <label>
-          What's on your mind?
-          <textarea name="content" placeholder="Enter post content" required></textarea>
-        </label>
-        <!-- type=submit default -->
-        <button type="submit">Create Post</button>
-      </form>
+  <k-page path="/?list=&page=1&date=" name="Home">
+    <k-param k-if="list === 'ask' || list === 'show' || list === 'jobs'" name="prefix" value="list" />
+    <k-param name="posts" value="!list.includes('new') ? (getPosts.data ?? []) : (getRecentPosts.data ?? [])" />
 
-      <div>
-        <!-- index for foreach -->
-        <foreach items="getPosts.data" item="post">
-          <article>
-            <p>@{{post.author}} at {{new Date(post.dateCreated).toLocaleString()}}</p>
-            <p>{{post.content}}</p>
-            <div>
-              <param name="id" value="post._id" />
-              <param name="upvoters" value="getUpvotes.loading ? [] : getUpvotes.data" />
-
-              <p>Upvotes: {{upvoters.length}}</p>
-
-              <form action="addUpvote" if="!upvoters.includes(user.username)">
-                <param name="id" value="post._id" />
-                <button type="submit">Upvote</button>
-              </form>
-              <form action="removeUpvote" else>
-                <param name="id" value="post._id" />
-                <button type="submit">Remove Upvote</button>
-              </form>
-
-              <form action="makeComment">
-                <param name="id" value="post._id" />
-                <input type="textarea" name="content" placeholder="Enter your comment" required>
-                <button type="submit">Add a Comment</button>
-              </form>
-            </div>
-
-            <param name="id" value="post._id" />
-            <param name="comments" value="getComments.loading ? [] : getComments.data" />
-            <foreach items="comments" item="commentItem">
-              <!-- rename sstyle to ?? computed-style / :style / k-style -->
-              <div sstyle="margin-left: {{commentItem.depth}}em">
-                <p>{{commentItem.comment.author}}:</p>
-                <p>{{commentItem.comment.content}}</p>
-                <form action="makeComment">
-                  <param name="id" value="commentItem.comment._id" />
-                  <input type="textarea" name="content" placeholder="Enter your comment" required>
-                  <button type="submit">Reply</button>
-                </form>
-              </div>
-            </foreach>
-          </article>
-        </foreach>
-      </div>
-    </main>
+    <k-foreach items="posts" item="post">
+      <article>
+        <div class="post">
+          <span style="margin-left: 1ch;">{{ post.index }}.</span>
+          <k-param name="voteType" value="up" />
+          <k-param name="id" value="post._id" />
+          <span class="voted" k-if="post.author.username === user?.username">*</span>
+          <img class="vote-arrow" src="/triangle.svg" alt="upvote" k-else
+            k-style="visibility: {{post.voted ? 'hidden' : 'unset'}}" k-click="votePost">
+          <span>
+            <a href="{{ post.url }}" class="title">
+              {{ post.title }}
+            </a>
+          </span>
+          <span class="domain" k-if="post.url">({{ new URL(post.url).host }})</span>
+        </div>
+        <div class="subtext">
+          <span>
+            {{post.points}} point{{post.points>1?'s':''}} by
+            <a href="/user?id={{post.author.username}}">{{post.author.username}} </a>
+            <a href="/item?id={{post._id}}">{{ moment(post.dateCreated).fromNow() }}</a>
+            <span k-if="post.voted && post.author.username !== user.username">
+              <k-param name="voteType" value="unvote" />
+              <k-param name="id" value="post._id" />
+              | <a href="#" k-click="votePost">unvote</a>
+            </span>
+            |
+            <a>hide</a>
+            |
+            <a href="/item?id={{post._id}}">
+              <span k-if="post.comments === 0">discuss</span>
+              <span k-else>{{post.comments}} comment{{post.comments > 1 ? "s" : ""}}</span>
+            </a>
+          </span>
+        </div>
+      </article>
+    </k-foreach>
   </k-page>
 
+  <k-page class="profile-page" path="user?id=" name="user profile">
+    <k-param name="username" value="id" />
+    <k-param name="user" value="getUser.data" />
+    <table>
+      <tbody>
+        <tr>
+          <td>user:</td>
+          <td>{{user.username}}</td>
+        </tr>
+        <tr>
+          <td>created:</td>
+          <td>{{user.dateCreated}}</td>
+        </tr>
+        <tr>
+          <td>karma:</td>
+          <td>{{user.karma}}</td>
+        </tr>
+        <tr>
+          <td>about:</td>
+          <td>{{user.about ?? ""}}</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><a href="submissions?id={{user.username}}">submissions</a></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><a href="threads?id={{user.username}}">threads</a></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><a href="favorites?id={{user.username}}">favorites</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </k-page>
+
+
+  <k-page path="submit" name="Submit" class="submit">
+    <k-redirect k-if="!user" to="/login" />
+
+    <form action="submit">
+      <table>
+        <tbody>
+          <tr>
+            <td>title:</td>
+            <td><input type="text" name="title" autofocus size="50"></td>
+          </tr>
+          <tr>
+            <td>url:</td>
+            <td><input type="url" name="url" size="50"></td>
+          </tr>
+          <tr>
+            <td>text:</td>
+            <td><textarea name="text" rows="4" cols="50"></textarea></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><button type="submit">submit</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+    <p>Leave url blank to submit a question for discussion. If there is no url, text will appear at the top of the
+
+      thread. If there is a url, text is optional.</p>
+  </k-page>
+
+
+  <hr />
   <footer>
-    <p>This website is fully AI generated</p>
+    <!-- horizontal line -->
+    <br>
+    <div class="links">
+      <a>Guidelines</a>
+      |
+      <a>FAQ</a>
+      |
+      <a>Lists</a>
+      |
+      <a>API</a>
+      |
+      <a>Security</a>
+      |
+      <a>Legal</a>
+      |
+      <a>Apply to YC</a>
+      |
+      <a>Contact</a>
+    </div>
+    <div>
+      Search: <input type="text">
+    </div>
   </footer>
-</k-pages>
+</body>

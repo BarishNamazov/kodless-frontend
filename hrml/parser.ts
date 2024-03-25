@@ -21,7 +21,9 @@ export default function hrmlParser(code: string): HRMLParserResult {
   const actionsContainer = parsed.getElementsByTagName(ACTIONS_TAG)[0];
   const actions = actionsContainer.getElementsByTagName(ACTION_TAG).map((action) => {
     const { refreshOn, ...attrs } = action.attributes;
-    if (!attrs.name || !attrs.method || !attrs.path) {
+
+    attrs.method = attrs.method?.toUpperCase() ?? 'GET';
+    if (!attrs.name || !attrs.path) {
       throw new Error(`Action must have name, method, and path attributes. Found:\n ${action.outerHTML}`);
     }
 
@@ -50,7 +52,7 @@ export default function hrmlParser(code: string): HRMLParserResult {
       if (child instanceof HTMLElement) {
         return processElement(child);
       }
-      return child.rawText.trim();
+      return child.rawText;
     });
 
     children = children.filter((child) => typeof child === 'object' || child.trim().length > 0);

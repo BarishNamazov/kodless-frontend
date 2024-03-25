@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watchEffect } from 'vue';
+import { computed, onMounted, ref, type VNodeRef } from 'vue';
 import { RouterLink } from 'vue-router';
 import { evaluateWithCtx } from '@/eval';
-import { type HrmlElement } from 'hrml/types';
-import { FOREACH_TAG, STYLE_ATTR, IF_ATTR } from '@/../hrml/types';
+import { FOREACH_TAG, STYLE_ATTR, IF_ATTR, type HrmlElement } from '@/../hrml/types';
 import { listenToParams, separateParams } from '@/util';
 
 import ChildrenRenderer from './ChildrenRenderer.vue';
 import ForEachRenderer from './ForEachRenderer.vue';
 import FormRenderer from './FormRenderer.vue';
+import router from '@/router';
 
 // For these, we need to calculate params for each child separately
 const TAGS_WITH_SPECIAL_CTX = [FOREACH_TAG];
@@ -57,35 +57,95 @@ const styles = computed(() => {
   return { ...styles, ...kStyles };
 });
 
-const thisRef = ref<HTMLElement | null>(null);
+const thisRef = ref<VNodeRef | null>(null);
 onMounted(() => {
   if (view.attributes.bind) {
     ctx[view.attributes.bind] = thisRef;
   }
 });
 
+const handleClick = async () => {
+  const action = ctx[view.attributes['k-click']];
+  if (!action || !action.__isAction) {
+    console.warn(`Action ${view.attributes['k-click']} not found`);
+    return;
+  }
+  const params = Object.fromEntries(
+    action.params.map((param: string) => {
+      return [param, ctx[param]];
+    })
+  );
+  console.log('params', params);
+  action.setAdditionalParams(params);
+  await action.execute(params);
+};
+
 if ('log' in view.attributes) {
   console.log(view, ctx);
 }
+
+const href = computed(() => {
+  if (view.tag !== 'a' || !view.attributes.href) {
+    return { href: '#', isAbsolute: false };
+  }
+
+  const href = evaluateWithCtx(view.attributes.href, ctx) as string;
+  return { href, isAbsolute: new URL(document.baseURI).origin !== new URL(href, document.baseURI).origin };
+});
+
+const RedirectRenderer = {
+  props: {
+    view: Object,
+    ctx: Object
+  },
+  setup(props: any) {
+    const { view, ctx } = props;
+    const to = view.attributes.to;
+    const newPath = evaluateWithCtx(to, ctx);
+    router.push(newPath);
+  }
+};
 </script>
 
 <template>
   <template v-if="!!show">
+    <template v-if="view.tag === 'k-redirect'">
+      <RedirectRenderer :view :ctx />
+    </template>
+
     <template v-if="view.tag === FOREACH_TAG">
       <ForEachRenderer :view :ctx :key="updater" />
     </template>
 
     <template v-else-if="view.tag === 'a'">
-      <RouterLink :to="view.attributes.href" v-bind="view.attributes" :key="updater" :style="styles" ref="thisRef">
+      <component
+        :is="href.isAbsolute ? 'a' : RouterLink"
+        :target="href.isAbsolute ? '_blank' : undefined"
+        v-bind="view.attributes"
+        :to="href.href"
+        :href="href.href"
+        :key="updater"
+        :style="styles"
+        ref="thisRef"
+        @click="handleClick"
+      >
         <ChildrenRenderer :views="children" :ctx />
-      </RouterLink>
+      </component>
     </template>
 
     <template v-else-if="view.tag === 'form'">
       <FormRenderer :view :ctx :key="updater" :style="styles" ref="thisRef" />
     </template>
 
-    <component v-else :is="view.tag" v-bind="view.attributes" :key="updater" :style="styles" ref="thisRef">
+    <component
+      v-else
+      :is="view.tag"
+      v-bind="view.attributes"
+      :key="updater"
+      :style="styles"
+      ref="thisRef"
+      @click="handleClick"
+    >
       <ChildrenRenderer :views="children" :ctx />
     </component>
   </template>

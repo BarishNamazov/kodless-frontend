@@ -4,6 +4,7 @@ import ChildrenRenderer from './ChildrenRenderer.vue';
 import { ref } from 'vue';
 import { separateParams } from '@/util';
 import { evaluateWithCtx } from '@/eval';
+import router from '@/router';
 
 const { view, ctx } = defineProps<{ view: HrmlElement; ctx: Record<string, any> }>();
 
@@ -27,6 +28,10 @@ async function handleSubmit(e: Event) {
   setAdditionalParams(hiddenFields);
   await execute({ ...fields, ...hiddenFields });
   form.value!.reset();
+
+  if (view.attributes.redirect) {
+    router.push(view.attributes.redirect);
+  }
 }
 </script>
 

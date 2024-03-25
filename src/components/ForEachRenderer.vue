@@ -22,7 +22,11 @@ const getCtx = (item: any) => {
 </script>
 
 <template>
-  <template v-for="(item, i) in list" :key="i">
-    <ChildrenRenderer :views :ctx="getCtx(item)" />
+  <template v-if="Array.isArray(list)">
+    <template v-for="(item, i) in list" :key="i">
+      <ChildrenRenderer :views :ctx="getCtx(item)" />
+    </template>
+    <p v-if="list.length === 0">No items to display</p>
   </template>
+  <p v-else>Invalid list, value resolved to: {{ list }}</p>
 </template>
